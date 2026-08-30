@@ -1,0 +1,2 @@
+import{describe,it,expect}from'vitest';import{deriveExposures}from'../src/health/events/exposures';
+describe('event exposure semantics',()=>{it('creates sauna temporal windows',()=>{const x=deriveExposures({id:'1',eventType:'sauna',startedAt:'2026-08-29T18:00:00Z',durationMinutes:20});expect(x.some(v=>v.exposureKey==='sauna:acute_0_6h')).toBe(true);expect(x[0].valueNumeric).toBe(20)})});

@@ -1,0 +1,2 @@
+import{describe,it,expect}from'vitest';import{buildDailyBrief}from'../src/services/daily-brief';
+describe('daily brief',()=>{it('builds robust change',()=>{const b=buildDailyBrief({date:'2026-08-29',hrv42:Array(42).fill(76),hrv7:[66,68,67,69,68,67,68],restingHr42:Array(42).fill(48),restingHr7:Array(7).fill(51),sleepMinutes42:Array(42).fill(450),sleepMinutes7:Array(7).fill(420)});expect(b.recovery.hrvBaseline).toBe(76);expect(Math.round(b.recovery.hrvChangePct!)).toBe(-11);expect(b.sleep.changeMinutes).toBe(-30)})});

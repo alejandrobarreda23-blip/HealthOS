@@ -1,0 +1,2 @@
+import{describe,it,expect}from'vitest';import{matchedAssociation}from'../src/health/associations/matched';
+describe('matched association',()=>{it('compares exposed days with similar controls',()=>{const days=[{date:'1',exposed:true,outcome:78,covariates:{load:50}},{date:'2',exposed:true,outcome:80,covariates:{load:60}},{date:'3',exposed:false,outcome:72,covariates:{load:51}},{date:'4',exposed:false,outcome:73,covariates:{load:61}}];const r=matchedAssociation(days,['load']);expect(r.nMatched).toBe(2);expect(r.effect).toBeGreaterThan(0)})});

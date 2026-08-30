@@ -1,0 +1,2 @@
+import{describe,it,expect}from'vitest';import{independenceFactors}from'../src/evidence/independence';
+describe('independence guardrail',()=>{it('penalizes correlated family members',()=>{const f=independenceFactors(['resting_hr','hrv_rmssd','vo2max']);expect(f.resting_hr).toBeLessThan(1);expect(f.hrv_rmssd).toBeLessThan(1);expect(f.vo2max).toBe(1)})});

@@ -1,0 +1,2 @@
+import{describe,it,expect}from'vitest';import{calculatePhenoAge}from'../src/aging/phenoage';
+describe('PhenoAge',()=>{it('returns a finite age for plausible normalized labs',()=>{const age=calculatePhenoAge({ageYears:50,albuminGL:43,creatinineUmolL:80,glucoseMmolL:5.1,crpMgDl:.1,lymphocytePercent:30,mcvFl:90,rdwPercent:13,alkalinePhosphataseUL:70,wbc10e3Ul:6});expect(Number.isFinite(age)).toBe(true);expect(age).toBeGreaterThan(0);expect(age).toBeLessThan(120)})});

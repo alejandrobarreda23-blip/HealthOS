@@ -1,0 +1,2 @@
+import{describe,it,expect}from'vitest';import{mapAssociationToEffects}from'../src/learning/effect-engine';import{OUTCOME_MAP}from'../src/learning/outcome-map';
+describe('learning guardrails',()=>{it('does not infer direction for contextual outcomes',()=>{const x=mapAssociationToEffects({exposureKey:'x',outcomeKey:'weight',effect:-.2,nExposed:30,nControl:30,confidence:.9,confounderCoverage:.9,window:'30d'},OUTCOME_MAP);expect(x[0].favorableEffect).toBeNull()});});

@@ -1,0 +1,2 @@
+import{describe,it,expect}from'vitest';import{decisionDemo}from'../src/decision/demo';
+describe('Decision integration',()=>{it('builds a prioritized queue from the four intelligence layers',()=>{const x=decisionDemo();expect(x.queue.length).toBeGreaterThan(0);expect(x.queue[0].rank).toBe(1);expect(x.engineVersion).toBe('decision-engine-v1')})});

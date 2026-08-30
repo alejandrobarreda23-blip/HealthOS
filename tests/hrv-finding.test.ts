@@ -1,0 +1,2 @@
+import{describe,it,expect}from'vitest';import{detectSustainedHrvDrop}from'../src/health/findings/hrv';
+describe('HRV finding',()=>{it('detects sustained fall',()=>{const baseline=[72,74,75,76,77,78,74,75,76,77,78,79,75,76,77,78,74,75,76,77,78,79];const f=detectSustainedHrvDrop([64,65,66,65,64,67,66],baseline);expect(f?.findingKey).toBe('sustained_hrv_drop')})});

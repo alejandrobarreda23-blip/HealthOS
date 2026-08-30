@@ -1,0 +1,1 @@
+import{describe,it,expect}from'vitest';import{demo}from'../src/demo/data';describe('dashboard contract',()=>{it('has required top-level domains',()=>{expect(demo).toHaveProperty('recovery');expect(demo).toHaveProperty('sleep');expect(demo).toHaveProperty('activity');expect(demo).toHaveProperty('findings')})});

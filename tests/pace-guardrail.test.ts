@@ -1,0 +1,2 @@
+import{describe,it,expect}from'vitest';import{estimateHealthOsPace}from'../src/aging/pace';
+describe('pace guardrail',()=>{it('does not fabricate a pace',()=>{const x=estimateHealthOsPace({daysObserved:400,systems:7,coverage:.9});expect(x.status).toBe('calibration_required');expect(x.value).toBeNull()});it('rejects sparse data',()=>{expect(estimateHealthOsPace({daysObserved:40,systems:2,coverage:.5}).status).toBe('insufficient')})});

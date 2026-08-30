@@ -1,0 +1,2 @@
+import{describe,it,expect}from'vitest';import{simulateScenario}from'../src/aging/pace/scenarios';import{paceDemoInputs}from'../src/aging/pace/demo';
+describe('pace scenario',()=>{it('supports transparent sensitivity analysis',()=>{const x=simulateScenario(paceDemoInputs,{key:'sleep',label:'Sleep sensitivity',deltas:{sleep_recovery:.1},evidenceLevel:'illustrative'});expect(x.result.indexValue).not.toBeNull();expect(x.caveat).toContain('not a causal')})});

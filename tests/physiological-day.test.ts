@@ -1,0 +1,1 @@
+import{describe,it,expect}from'vitest';import{assignPhysiologicalDate}from'../src/health/physiological-day';describe('physiological day',()=>{it('assigns overnight sleep to wake date',()=>{expect(assignPhysiologicalDate({startedAt:new Date('2026-08-29T21:30:00Z'),endedAt:new Date('2026-08-30T05:20:00Z'),timezone:'Europe/Madrid'},'wake_date')).toBe('2026-08-30')})});

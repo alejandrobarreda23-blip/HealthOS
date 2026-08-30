@@ -1,0 +1,2 @@
+import{describe,it,expect}from'vitest';import{linearSlope,normalizedTrend}from'../src/aging/systems/stats';
+describe('system stats',()=>{it('detects upward slope',()=>{const p=[{date:'2026-01-01',value:10},{date:'2026-02-01',value:12},{date:'2026-03-01',value:14}];expect(linearSlope(p)!).toBeGreaterThan(0);expect(normalizedTrend(p)!).toBeGreaterThan(0)})});
