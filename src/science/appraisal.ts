@@ -1,0 +1,4 @@
+import type{ScientificStudy,Appraisal}from'./types';
+const base:Record<ScientificStudy['design'],number>={guideline:.9,systematic_review:.88,meta_analysis:.88,randomized_trial:.86,prospective_cohort:.72,cross_sectional:.48,diagnostic_accuracy:.68,other:.4};
+const c=(x:number)=>Math.max(0,Math.min(1,x));
+export function appraiseStudy(s:ScientificStudy):Appraisal{const internalValidity=c(base[s.design]-s.limitations.length*.035),precision=c(s.sampleSize?Math.log10(Math.max(10,s.sampleSize))/5:.45),consistency=s.conflicting?.3:s.replicated?.85:.52,directness=s.hasHardOutcomes?.9:.62,applicability=c(s.populationMatch),outcomeImportance=s.hasHardOutcomes?.95:.68;const score=.25*internalValidity+.15*directness+.15*precision+.15*consistency+.15*applicability+.15*outcomeImportance;return{score,certainty:score>=.82?'high':score>=.67?'moderate':score>=.5?'low':'very_low',internalValidity,directness,precision,consistency,applicability,outcomeImportance}}
