@@ -28,10 +28,26 @@ export default function Data() {
   const [syncError, setSyncError] = useState<string | null>(null);
 
   const sources = [
-    ['Health Connect', 'Preparado', 'Actividad, sueño y signos vitales'],
-    ['Oura', 'Próximamente', 'API directa'],
-    ['Ultrahuman', 'Próximamente', 'UltraSignal API'],
-    ['Analíticas', 'Preparado', 'PDF / entrada estructurada'],
+    [
+      'Health Connect',
+      'Preparado',
+      'Actividad, sueño y signos vitales',
+    ],
+    [
+      'Oura',
+      'Próximamente',
+      'API directa',
+    ],
+    [
+      'Ultrahuman',
+      'Próximamente',
+      'UltraSignal API',
+    ],
+    [
+      'Analíticas',
+      'Preparado',
+      'PDF / entrada estructurada',
+    ],
   ];
 
   async function syncIntervals() {
@@ -46,8 +62,10 @@ export default function Data() {
 
     try {
       const { data, error } = await supabase.functions.invoke(
-        'intervals-sync',
-        { body: {} },
+        'rapid-service',
+        {
+          body: {},
+        },
       );
 
       if (error) {
@@ -55,7 +73,10 @@ export default function Data() {
       }
 
       if (!data?.ok) {
-        throw new Error(data?.error ?? 'La sincronización no se completó.');
+        throw new Error(
+          data?.error ??
+            'La sincronización no se completó.',
+        );
       }
 
       setSyncResult(data as SyncResult);
@@ -74,9 +95,13 @@ export default function Data() {
     <>
       <header>
         <div className="eyebrow">DATOS</div>
+
         <h1>Fuentes</h1>
+
         <p className="muted">
-          {isLiveMode() ? 'Modo live' : 'Modo demo/local'}
+          {isLiveMode()
+            ? 'Modo live'
+            : 'Modo demo/local'}
         </p>
       </header>
 
@@ -84,14 +109,21 @@ export default function Data() {
         <div className="intervalsHead">
           <div>
             <strong>Intervals.icu</strong>
-            <small>Suunto · histórico y entrenamiento</small>
+
+            <small>
+              Suunto · histórico y entrenamiento
+            </small>
           </div>
-          <span className="connectedBadge">Conectado</span>
+
+          <span className="connectedBadge">
+            Conectado
+          </span>
         </div>
 
         <p className="muted intervalsDescription">
-          Importación raw-first. Los datos originales se conservan antes
-          de cualquier normalización o análisis.
+          Importación raw-first. Los datos originales
+          se conservan antes de cualquier normalización
+          o análisis.
         </p>
 
         <button
@@ -99,26 +131,36 @@ export default function Data() {
           onClick={syncIntervals}
           disabled={syncing || !user}
         >
-          {syncing ? 'Sincronizando…' : 'Sincronizar Intervals.icu'}
+          {syncing
+            ? 'Sincronizando…'
+            : 'Sincronizar Intervals.icu'}
         </button>
 
         {syncResult?.stored && (
           <div className="syncResult">
-            <strong>Sincronización completada</strong>
+            <strong>
+              Sincronización completada
+            </strong>
 
             <div>
               <span>Wellness</span>
-              <b>{syncResult.stored.wellness}</b>
+              <b>
+                {syncResult.stored.wellness}
+              </b>
             </div>
 
             <div>
               <span>Actividades</span>
-              <b>{syncResult.stored.activities}</b>
+              <b>
+                {syncResult.stored.activities}
+              </b>
             </div>
 
             <div className="syncTotal">
               <span>Raw records</span>
-              <b>{syncResult.stored.total}</b>
+              <b>
+                {syncResult.stored.total}
+              </b>
             </div>
 
             <small>
@@ -135,21 +177,30 @@ export default function Data() {
       </section>
 
       <section className="card sourceList">
-        {sources.map(([name, status, description]) => (
-          <div className="source" key={name}>
-            <div>
-              <strong>{name}</strong>
-              <small>{description}</small>
+        {sources.map(
+          ([name, status, description]) => (
+            <div
+              className="source"
+              key={name}
+            >
+              <div>
+                <strong>{name}</strong>
+                <small>{description}</small>
+              </div>
+
+              <span>{status}</span>
             </div>
-            <span>{status}</span>
-          </div>
-        ))}
+          ),
+        )}
       </section>
 
       {user && (
         <section className="card">
           <strong>Sesión</strong>
-          <p className="muted">{user.email}</p>
+
+          <p className="muted">
+            {user.email}
+          </p>
 
           <button
             className="secondary"
