@@ -12,42 +12,50 @@ permissions:
 jobs:
   web:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
+
       - run: npm ci
+
       - run: npm test
+
       - run: npm run build
+
       - name: Verify migrations are self-contained
         run: |
           test -f supabase/migrations/001_health_os_init.sql
           test -f supabase/migrations/002_analysis_layer.sql
           test -f supabase/migrations/014_security_hardening.sql
 
-  android-web-sync:
+  android:
     runs-on: ubuntu-latest
     needs: web
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
+
       - run: npm ci
-      - run: npm run build
-      - name: Capacitor configuration check
-        run: npx cap doctor
-      - name: Android status
+
+      - name: Android build status
         run: |
           if [ -d android ]; then
+            npm run build
             npx cap sync android
             cd android
             chmod +x gradlew
             ./gradlew assembleDebug
           else
-            echo "Android project not generated yet. Run: npx cap add android"
-            echo "Then integrate native/android/health-connect/HealthConnectPlugin.kt and commit android/."
+            echo "android/ is not committed yet; Android build intentionally skipped."
+            echo "Next milestone: generate it with 'npx cap add android', integrate Health Connect plugin, then commit android/."
           fi
