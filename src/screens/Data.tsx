@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import { isLiveMode } from '../state/runtime';
+import AcquisitionOpportunities from '../components/AcquisitionOpportunities';
 
 type SyncResult = {
   ok: boolean;
@@ -512,6 +513,8 @@ export default function Data() {
           ),
         )}
       </section>
+
+      {user && <AcquisitionOpportunities />}
 
       {user && (
         <section className="card">
