@@ -30,8 +30,10 @@ jobs:
       - name: Verify migrations are self-contained
         run: |
           test -f supabase/migrations/001_health_os_init.sql
-          test -f supabase/migrations/002_analysis_layer.sql
           test -f supabase/migrations/014_security_hardening.sql
+          test -f supabase/migrations/018_independent_acquisition_gaps.sql
+          test -f supabase/migrations/024_health_brief_runtime_v1.sql
+          node scripts/check-migrations-head.mjs .
 
   android:
     runs-on: ubuntu-latest
