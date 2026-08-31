@@ -1,4 +1,5 @@
 import{buildAcquisitionOpportunity,rankAcquisitionOpportunities}from'../acquisition/coverage';
+import{groupAcquisitionOpportunities}from'../acquisition/grouping';
 import{detectSourceContinuitySignals,suppressSourceDuplicatedStaleOpportunities}from'../acquisition/source-continuity';
 import type{AcquisitionSnapshot}from'../acquisition/types';
 import{getAcquisitionInputs}from'../repositories/acquisition';
@@ -10,9 +11,10 @@ export async function buildAcquisitionSnapshot(userId:string,asOf=new Date().toI
  const unresolved=rankAcquisitionOpportunities(all.filter(x=>x.status!=='adequate'&&x.status!=='observed_no_cadence'));
  const sourceSignals=detectSourceContinuitySignals(unresolved);
  const opportunities=suppressSourceDuplicatedStaleOpportunities(unresolved,sourceSignals);
+ const gapGroups=groupAcquisitionOpportunities(opportunities);
  return{
-  asOf,contracts:contracts.length,sourceSignals,opportunities,
+  asOf,contracts:contracts.length,sourceSignals,opportunities,gapGroups,
   adequateMetrics:all.filter(x=>x.status==='adequate'||x.status==='observed_no_cadence').length,
-  unresolvedMetrics:opportunities.length+sourceSignals.length
+  unresolvedMetrics:gapGroups.length+sourceSignals.length
  };
 }
