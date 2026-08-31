@@ -3,6 +3,9 @@ export type MeasurementMode=
  |'laboratory_periodic'|'clinical_episodic'|'manual_contextual';
 export type ManualBurden='none'|'very_low'|'low'|'moderate'|'high';
 export type LongitudinalRole='state'|'trajectory'|'dynamics'|'adaptation'|'context';
+export type RegistryStatus='active'|'alias'|'deprecated';
+export type AcquisitionActionability='passive'|'self_measurement'|'protocol_ready'|'review_only'|'contextual';
+export type AcquisitionPriorityTier=1|2|3;
 
 export interface AcquisitionContract{
  measurementMode:MeasurementMode;
@@ -30,6 +33,13 @@ export interface MetricAcquisitionContract extends AcquisitionContract{
  displayName:string;
  domain:string;
  canonicalUnit?:string|null;
+ registryStatus:RegistryStatus;
+ canonicalMetricKey?:string|null;
+ acquisitionPriorityTier?:AcquisitionPriorityTier|null;
+ acquisitionGroupKey?:string|null;
+ acquisitionGroupLabel?:string|null;
+ acquisitionActionability?:AcquisitionActionability|null;
+ acquisitionRationale?:string|null;
 }
 
 export interface MetricObservationSummary{
@@ -72,6 +82,7 @@ export interface AcquisitionOpportunity{
  status:AcquisitionCoverageStatus;
  action:AcquisitionAction;
  priority:number;
+ priorityTier:AcquisitionPriorityTier;
  reason:string;
  measurementMode:MeasurementMode;
  preferredCadence?:string;
@@ -81,6 +92,29 @@ export interface AcquisitionOpportunity{
  boundary:string;
  lastProvider?:string|null;
  lastObservedAt?:string|null;
+ groupKey:string;
+ groupLabel:string;
+ actionability:AcquisitionActionability;
+ acquisitionRationale:string;
+}
+
+export interface AcquisitionGapGroup{
+ groupKey:string;
+ label:string;
+ priorityTier:AcquisitionPriorityTier;
+ actionability:AcquisitionActionability;
+ metricKeys:string[];
+ displayNames:string[];
+ domains:string[];
+ statuses:AcquisitionCoverageStatus[];
+ priority:number;
+ protocolId?:string;
+ preferredCadence?:string;
+ headline:string;
+ explanation:string;
+ nextStep:string;
+ rationale:string;
+ boundary:string;
 }
 
 export interface SourceContinuitySignal{
@@ -100,6 +134,7 @@ export interface AcquisitionSnapshot{
  contracts:number;
  sourceSignals:SourceContinuitySignal[];
  opportunities:AcquisitionOpportunity[];
+ gapGroups:AcquisitionGapGroup[];
  adequateMetrics:number;
  unresolvedMetrics:number;
 }

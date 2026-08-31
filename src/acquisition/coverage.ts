@@ -79,13 +79,16 @@ export function buildAcquisitionOpportunity(c:MetricAcquisitionContract,s:Metric
  });
  return{
   metricKey:c.metricKey,displayName:c.displayName,domain:c.domain,status:coverage.status,
-  action:actionFor(c,coverage),priority,reason,measurementMode:c.measurementMode,
-  preferredCadence:c.preferredCadence,protocolId:c.protocolId,longitudinalRoles:c.longitudinalRoles,
-  coverage,lastProvider:s?.lastProvider??null,lastObservedAt:s?.lastObservedAt??null,
-  boundary:'Prioridad de adquisición, no indicación clínica. No autoriza pruebas, diagnóstico ni tratamiento.'
+  action:actionFor(c,coverage),priority,priorityTier:c.acquisitionPriorityTier??3,reason,
+  measurementMode:c.measurementMode,preferredCadence:c.preferredCadence,protocolId:c.protocolId,
+  longitudinalRoles:c.longitudinalRoles,coverage,lastProvider:s?.lastProvider??null,lastObservedAt:s?.lastObservedAt??null,
+  groupKey:c.acquisitionGroupKey??c.metricKey,groupLabel:c.acquisitionGroupLabel??c.displayName,
+  actionability:c.acquisitionActionability??'review_only',
+  acquisitionRationale:c.acquisitionRationale??'Hueco definido por el contrato de adquisición.',
+  boundary:'Prioridad de adquisición, no prioridad médica. No autoriza pruebas, diagnóstico ni tratamiento.'
  };
 }
 
 export function rankAcquisitionOpportunities(xs:AcquisitionOpportunity[]){
- return[...xs].sort((a,b)=>b.priority-a.priority||a.metricKey.localeCompare(b.metricKey));
+ return[...xs].sort((a,b)=>a.priorityTier-b.priorityTier||b.priority-a.priority||a.metricKey.localeCompare(b.metricKey));
 }
