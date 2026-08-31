@@ -81,7 +81,7 @@ export function buildAcquisitionOpportunity(c:MetricAcquisitionContract,s:Metric
   metricKey:c.metricKey,displayName:c.displayName,domain:c.domain,status:coverage.status,
   action:actionFor(c,coverage),priority,reason,measurementMode:c.measurementMode,
   preferredCadence:c.preferredCadence,protocolId:c.protocolId,longitudinalRoles:c.longitudinalRoles,
-  coverage,
+  coverage,lastProvider:s?.lastProvider??null,lastObservedAt:s?.lastObservedAt??null,
   boundary:'Prioridad de adquisición, no indicación clínica. No autoriza pruebas, diagnóstico ni tratamiento.'
  };
 }

@@ -40,6 +40,7 @@ export interface MetricObservationSummary{
  lastObservedAt?:string|null;
  meanQualityScore?:number|null;
  recentDistinctDays?:number;
+ lastProvider?:string|null;
 }
 
 export type AcquisitionCoverageStatus=
@@ -78,11 +79,26 @@ export interface AcquisitionOpportunity{
  longitudinalRoles:LongitudinalRole[];
  coverage:AcquisitionCoverage;
  boundary:string;
+ lastProvider?:string|null;
+ lastObservedAt?:string|null;
+}
+
+export interface SourceContinuitySignal{
+ kind:'source_discontinuity';
+ provider:string;
+ affectedMetricKeys:string[];
+ affectedDisplayNames:string[];
+ lastObservedAt:string;
+ daysSinceLastObservation:number;
+ synchronizedEnd:boolean;
+ reason:string;
+ boundary:string;
 }
 
 export interface AcquisitionSnapshot{
  asOf:string;
  contracts:number;
+ sourceSignals:SourceContinuitySignal[];
  opportunities:AcquisitionOpportunity[];
  adequateMetrics:number;
  unresolvedMetrics:number;
