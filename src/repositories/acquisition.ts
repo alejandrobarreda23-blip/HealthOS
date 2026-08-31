@@ -11,8 +11,7 @@ type RegistryRow={
  staleness_policy:Record<string,unknown>|null;
 };
 
-type SummaryRow={metric_key:string;observation_count:number;distinct_days:number;first_observed_at:string|null;last_observed_at:string|null;mean_quality_score:number|null};
-
+type SummaryRow={metric_key:string;observation_count:number;distinct_days:number;first_observed_at:string|null;last_observed_at:string|null;mean_quality_score:number|null;last_provider:string|null};
 type RecentRow={metric_key:string;physiological_date:string};
 
 export async function getAcquisitionInputs(userId:string,asOf:string):Promise<{contracts:MetricAcquisitionContract[];summaries:MetricObservationSummary[]}>{
@@ -31,7 +30,7 @@ export async function getAcquisitionInputs(userId:string,asOf:string):Promise<{c
  if(!contracts.length)return{contracts,summaries:[]};
 
  const{data:summary,error:se}=await supabase.from('metric_observation_summary')
-  .select('metric_key,observation_count,distinct_days,first_observed_at,last_observed_at,mean_quality_score')
+  .select('metric_key,observation_count,distinct_days,first_observed_at,last_observed_at,mean_quality_score,last_provider')
   .eq('user_id',userId).in('metric_key',contracts.map(x=>x.metricKey));
  if(se)throw se;
 
@@ -51,7 +50,7 @@ export async function getAcquisitionInputs(userId:string,asOf:string):Promise<{c
  const summaries=((summary??[])as SummaryRow[]).map(r=>({
   metricKey:r.metric_key,observationCount:Number(r.observation_count),distinctDays:Number(r.distinct_days),
   firstObservedAt:r.first_observed_at,lastObservedAt:r.last_observed_at,meanQualityScore:r.mean_quality_score,
-  recentDistinctDays:recentDays.get(r.metric_key)?.size??0
+  recentDistinctDays:recentDays.get(r.metric_key)?.size??0,lastProvider:r.last_provider
  }));
  return{contracts,summaries};
 }
