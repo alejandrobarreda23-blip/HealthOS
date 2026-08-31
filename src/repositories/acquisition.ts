@@ -1,5 +1,8 @@
 import{supabase}from'../lib/supabase';
-import type{MetricAcquisitionContract,MetricObservationSummary,MeasurementMode,ManualBurden,LongitudinalRole}from'../acquisition/types';
+import type{
+ AcquisitionActionability,AcquisitionPriorityTier,ManualBurden,MeasurementMode,
+ MetricAcquisitionContract,MetricObservationSummary,RegistryStatus,LongitudinalRole
+}from'../acquisition/types';
 
 const PAGE=1000;
 
@@ -8,7 +11,10 @@ type RegistryRow={
  measurement_mode:MeasurementMode;continuous_required:boolean;preferred_cadence:string|null;
  protocol_id:string|null;event_triggered_reassessment:boolean;manual_burden:ManualBurden;
  longitudinal_roles:LongitudinalRole[]|null;minimum_useful_density:Record<string,unknown>|null;
- staleness_policy:Record<string,unknown>|null;
+ staleness_policy:Record<string,unknown>|null;registry_status:RegistryStatus;canonical_metric_key:string|null;
+ acquisition_priority_tier:AcquisitionPriorityTier|null;acquisition_group_key:string|null;
+ acquisition_group_label:string|null;acquisition_actionability:AcquisitionActionability|null;
+ acquisition_rationale:string|null;
 };
 
 type SummaryRow={metric_key:string;observation_count:number;distinct_days:number;first_observed_at:string|null;last_observed_at:string|null;mean_quality_score:number|null;last_provider:string|null};
@@ -17,21 +23,25 @@ type RecentRow={metric_key:string;physiological_date:string};
 export async function getAcquisitionInputs(userId:string,asOf:string):Promise<{contracts:MetricAcquisitionContract[];summaries:MetricObservationSummary[]}>{
  if(!supabase)return{contracts:[],summaries:[]};
  const{data:registry,error:re}=await supabase.from('metric_registry')
-  .select('metric_key,display_name,domain,canonical_unit,measurement_mode,continuous_required,preferred_cadence,protocol_id,event_triggered_reassessment,manual_burden,longitudinal_roles,minimum_useful_density,staleness_policy')
-  .not('measurement_mode','is',null).order('metric_key');
+  .select('metric_key,display_name,domain,canonical_unit,measurement_mode,continuous_required,preferred_cadence,protocol_id,event_triggered_reassessment,manual_burden,longitudinal_roles,minimum_useful_density,staleness_policy,registry_status,canonical_metric_key,acquisition_priority_tier,acquisition_group_key,acquisition_group_label,acquisition_actionability,acquisition_rationale')
+  .eq('registry_status','active').not('measurement_mode','is',null).not('acquisition_priority_tier','is',null).order('metric_key');
  if(re)throw re;
  const rows=(registry??[])as RegistryRow[];
  const contracts=rows.map(r=>({
   metricKey:r.metric_key,displayName:r.display_name,domain:r.domain,canonicalUnit:r.canonical_unit,
   measurementMode:r.measurement_mode,continuousRequired:r.continuous_required,preferredCadence:r.preferred_cadence??undefined,
   protocolId:r.protocol_id??undefined,eventTriggeredReassessment:r.event_triggered_reassessment,
-  manualBurden:r.manual_burden,longitudinalRoles:r.longitudinal_roles??[],minimumUsefulDensity:r.minimum_useful_density??{},stalenessPolicy:r.staleness_policy??{}
+  manualBurden:r.manual_burden,longitudinalRoles:r.longitudinal_roles??[],minimumUsefulDensity:r.minimum_useful_density??{},stalenessPolicy:r.staleness_policy??{},
+  registryStatus:r.registry_status,canonicalMetricKey:r.canonical_metric_key,acquisitionPriorityTier:r.acquisition_priority_tier,
+  acquisitionGroupKey:r.acquisition_group_key,acquisitionGroupLabel:r.acquisition_group_label,
+  acquisitionActionability:r.acquisition_actionability,acquisitionRationale:r.acquisition_rationale
  }));
  if(!contracts.length)return{contracts,summaries:[]};
 
- const{data:summary,error:se}=await supabase.from('metric_observation_summary')
+ const keys=contracts.map(x=>x.metricKey);
+ const{data:summary,error:se}=await supabase.from('metric_acquisition_summary')
   .select('metric_key,observation_count,distinct_days,first_observed_at,last_observed_at,mean_quality_score,last_provider')
-  .eq('user_id',userId).in('metric_key',contracts.map(x=>x.metricKey));
+  .eq('user_id',userId).in('metric_key',keys);
  if(se)throw se;
 
  const maxWindow=Math.max(1,...contracts.map(c=>Number(c.minimumUsefulDensity?.window_days??0)).filter(Number.isFinite));
@@ -39,7 +49,7 @@ export async function getAcquisitionInputs(userId:string,asOf:string):Promise<{c
  const recent:RecentRow[]=[];
  for(let from=0;;from+=PAGE){
   const{data,error}=await supabase.from('observations').select('metric_key,physiological_date')
-   .eq('user_id',userId).in('metric_key',contracts.map(x=>x.metricKey))
+   .eq('user_id',userId).in('metric_key',keys)
    .gte('physiological_date',cutoff).lte('physiological_date',asOf).range(from,from+PAGE-1);
   if(error)throw error;
   const page=(data??[])as RecentRow[];recent.push(...page);
