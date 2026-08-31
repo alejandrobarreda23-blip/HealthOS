@@ -3,7 +3,7 @@ import{detectSourceContinuitySignals,suppressSourceDuplicatedStaleOpportunities}
 import type{AcquisitionOpportunity}from'../src/acquisition/types';
 
 function stale(metricKey:string,displayName:string,days:number,provider='intervals_icu'):AcquisitionOpportunity{
- return{metricKey,displayName,domain:'test',status:'stale',action:'consider_measurement',priority:.8,reason:'stale',measurementMode:'passive_daily',longitudinalRoles:['dynamics'],boundary:'test',lastProvider:provider,lastObservedAt:`2026-08-${String(31-days).padStart(2,'0')}T12:00:00Z`,coverage:{metricKey,status:'stale',observationCount:100,distinctDays:100,recentDistinctDays:0,daysSinceLastObservation:days,densityRatio:0,minimumDistinctDays:20,targetDistinctDays:30,windowDays:42}};
+ return{metricKey,displayName,domain:'test',status:'stale',action:'consider_measurement',priority:.8,priorityTier:3,reason:'stale',measurementMode:'passive_daily',longitudinalRoles:['dynamics'],boundary:'test',lastProvider:provider,lastObservedAt:`2026-08-${String(31-days).padStart(2,'0')}T12:00:00Z`,groupKey:metricKey,groupLabel:displayName,actionability:'review_only',acquisitionRationale:'test fixture',coverage:{metricKey,status:'stale',observationCount:100,distinctDays:100,recentDistinctDays:0,daysSinceLastObservation:days,densityRatio:0,minimumDistinctDays:20,targetDistinctDays:30,windowDays:42}};
 }
 
 describe('source continuity',()=>{

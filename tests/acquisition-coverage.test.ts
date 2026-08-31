@@ -2,7 +2,7 @@ import{describe,it,expect}from'vitest';
 import{buildAcquisitionOpportunity,evaluateAcquisitionCoverage,rankAcquisitionOpportunities}from'../src/acquisition/coverage';
 import type{MetricAcquisitionContract}from'../src/acquisition/types';
 
-const base:MetricAcquisitionContract={metricKey:'hrv_rmssd',displayName:'HRV RMSSD',domain:'recovery',measurementMode:'passive_daily',continuousRequired:false,eventTriggeredReassessment:false,manualBurden:'none',longitudinalRoles:['dynamics'],minimumUsefulDensity:{window_days:42,minimum_distinct_days:20,target_distinct_days:30},stalenessPolicy:{max_age_days:3}};
+const base:MetricAcquisitionContract={metricKey:'hrv_rmssd',displayName:'HRV RMSSD',domain:'recovery',registryStatus:'active',measurementMode:'passive_daily',continuousRequired:false,eventTriggeredReassessment:false,manualBurden:'none',longitudinalRoles:['dynamics'],minimumUsefulDensity:{window_days:42,minimum_distinct_days:20,target_distinct_days:30},stalenessPolicy:{max_age_days:3}};
 
 describe('acquisition coverage',()=>{
  it('keeps missing distinct from zero/normal',()=>{const x=evaluateAcquisitionCoverage(base,undefined,'2026-08-31');expect(x.status).toBe('missing');expect(x.observationCount).toBe(0)});
