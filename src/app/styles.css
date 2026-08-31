@@ -117,3 +117,433 @@
 .analysisSyncStatus{margin-top:12px;padding-top:10px;border-top:1px solid #efeee9;display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;font-size:12px}
 .analysisSyncStatus b{color:#405548}
 .analysisSyncStatus small{grid-column:1/-1;color:#8a6a58;line-height:1.4}
+
+/* =========================================================
+   HealthOS Visual Polish Drop v1.11.5
+   Pure presentation layer: no physiological logic changes.
+   ========================================================= */
+:root{
+  --hos-bg:#f3f2ed;
+  --hos-surface:#fbfaf7;
+  --hos-card:#fffefa;
+  --hos-card-strong:#ffffff;
+  --hos-ink:#17211c;
+  --hos-ink-soft:#45514a;
+  --hos-muted:#78817c;
+  --hos-faint:#9aa19d;
+  --hos-line:#e6e3dc;
+  --hos-line-strong:#dcd8cf;
+  --hos-accent:#3f5d4e;
+  --hos-accent-2:#6f8779;
+  --hos-accent-soft:#edf1ec;
+  --hos-warm:#8f775b;
+  --hos-warm-soft:#f5f0e7;
+  --hos-alert:#8b5e4e;
+  --hos-alert-soft:#f5ece8;
+  --hos-radius-sm:12px;
+  --hos-radius-md:18px;
+  --hos-radius-lg:22px;
+  --hos-shadow:0 1px 2px rgba(25,32,28,.03),0 8px 28px rgba(34,42,37,.045);
+  --hos-shadow-raised:0 1px 2px rgba(25,32,28,.04),0 14px 38px rgba(34,42,37,.065);
+}
+
+html{background:var(--hos-bg)}
+body{
+  background:var(--hos-bg);
+  color:var(--hos-ink);
+  font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-feature-settings:"tnum" 1,"cv11" 1;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+.shell{
+  max-width:560px;
+  background:var(--hos-surface);
+  box-shadow:0 0 0 1px rgba(25,32,28,.02),0 0 80px rgba(25,32,28,.025);
+}
+main{padding:38px 22px 112px}
+header,.pageHeader{margin:2px 4px 28px}
+header h1,.pageHeader h1{
+  margin:5px 0 0;
+  font-size:37px;
+  line-height:1.04;
+  letter-spacing:-1.65px;
+  color:#101a15;
+  font-weight:760;
+}
+.eyebrow{
+  font-size:10px;
+  line-height:1;
+  letter-spacing:2.35px;
+  color:#637469;
+  font-weight:820;
+}
+.pageLead{margin:14px 0 0;font-size:14px;line-height:1.55;max-width:440px}
+.muted{color:var(--hos-muted)}
+
+.card{
+  background:var(--hos-card);
+  border:1px solid var(--hos-line);
+  border-radius:var(--hos-radius-lg);
+  padding:18px;
+  box-shadow:var(--hos-shadow);
+  margin-bottom:13px;
+}
+.card:hover{border-color:#dfdbd2}
+
+.sectionTitle{
+  color:var(--hos-ink);
+  font-size:16px;
+  line-height:1.2;
+  font-weight:780;
+  letter-spacing:-.25px;
+  margin:30px 2px 12px;
+}
+
+/* Today */
+.hero.card{
+  position:relative;
+  overflow:hidden;
+  padding:19px 20px 17px;
+  background:linear-gradient(145deg,#fffefa 0%,#fbfcf8 100%);
+}
+.hero.card:before{
+  content:"";
+  position:absolute;
+  width:150px;height:150px;
+  right:-65px;top:-90px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(84,111,94,.09),rgba(84,111,94,0) 68%);
+  pointer-events:none;
+}
+.hero strong{
+  font-size:32px;
+  line-height:1;
+  letter-spacing:-1.25px;
+  color:#102019;
+  font-variant-numeric:tabular-nums;
+}
+.briefLevel{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  margin-top:6px;
+  padding:4px 7px;
+  border-radius:999px;
+  background:var(--hos-warm-soft);
+  color:var(--hos-warm);
+  font-size:9px;
+  font-weight:800;
+  line-height:1;
+  letter-spacing:.65px;
+}
+.quality{height:4px;background:#e9e9e3;margin-top:16px}
+.quality i{background:linear-gradient(90deg,var(--hos-accent),#759081);border-radius:99px}
+.grid{gap:11px;margin-bottom:27px}
+.metric{
+  position:relative;
+  min-height:116px;
+  padding:17px 16px 15px;
+  overflow:hidden;
+}
+.metric:after{
+  content:"";
+  position:absolute;
+  left:16px;right:16px;bottom:0;
+  height:2px;
+  border-radius:4px 4px 0 0;
+  background:transparent;
+}
+.metricLabel{color:#65706a;font-size:12px;font-weight:610;letter-spacing:-.05px}
+.metricRow{margin:14px 0 7px;min-height:27px}
+.metric strong{
+  font-size:24px;
+  line-height:1;
+  font-weight:740;
+  letter-spacing:-.8px;
+  color:#102019;
+  font-variant-numeric:tabular-nums;
+}
+.metric small{font-size:10.5px;line-height:1.35;color:#7e8782}
+.metricMissing strong{color:#68726c;font-weight:520}
+.metricMissing:after{background:#edece6}
+.finding.card{
+  gap:13px;
+  padding:17px 18px;
+  background:linear-gradient(180deg,#fffefa,#fdfcf9);
+}
+.dot{width:7px;height:7px;margin-top:5px;background:#829287;box-shadow:0 0 0 4px #eef1ed}
+.dot.moderate{background:#a77b60;box-shadow:0 0 0 4px #f5eee8}
+.findingMeta{font-size:8px;letter-spacing:.85px;font-weight:760;color:#89918c;margin-bottom:5px}
+.finding strong{font-size:14px;letter-spacing:-.15px}
+.finding p{font-size:12px;line-height:1.5;color:#6d7771;margin-top:6px}
+.uncertaintyCard{
+  border-style:solid;
+  background:#faf9f6;
+  box-shadow:none;
+}
+.uncertaintyCard strong{font-size:13px}
+.uncertaintyCard p{color:#7d8580}
+
+/* Buttons */
+.primary,.secondary,.event{
+  min-height:44px;
+  border-radius:14px;
+  transition:transform .16s ease,background .16s ease,border-color .16s ease;
+}
+.primary{background:var(--hos-accent);box-shadow:0 5px 16px rgba(63,93,78,.13)}
+.primary:not(:disabled):active,.secondary:active,.event:active{transform:translateY(1px)}
+.secondary{background:var(--hos-accent-soft);color:var(--hos-accent)}
+.event{border-color:#c9ccc7;color:#5d6862;background:rgba(255,255,255,.36)}
+
+/* Trends */
+.trendControls{gap:10px;margin:-2px 0 15px}
+.trendMetricChips,.trendWindows{
+  gap:7px;
+  scrollbar-width:none;
+  padding:1px 1px 3px;
+}
+.trendMetricChips::-webkit-scrollbar,.trendWindows::-webkit-scrollbar{display:none}
+.trendMetricChips button,.trendWindows button{
+  appearance:none;
+  min-height:34px;
+  padding:7px 11px;
+  border:1px solid var(--hos-line-strong);
+  background:rgba(255,255,255,.72);
+  color:#5f6963;
+  font-size:11px;
+  font-weight:560;
+  letter-spacing:-.05px;
+  box-shadow:0 1px 1px rgba(25,32,28,.02);
+  transition:background .15s ease,color .15s ease,border .15s ease,transform .15s ease;
+}
+.trendMetricChips button:hover,.trendWindows button:hover{border-color:#cfcfc7}
+.trendMetricChips button.selected,.trendWindows button.selected{
+  background:var(--hos-accent);
+  color:#fff;
+  border-color:var(--hos-accent);
+  box-shadow:0 4px 12px rgba(63,93,78,.12);
+}
+.trendCard{padding:20px 18px 16px}
+.trendHead{align-items:flex-start;gap:16px}
+.trendHead>div small{font-size:9.5px;color:#959c98;margin-top:5px}
+.trendMetricLabel{font-size:12px;color:#52605a;font-weight:640}
+.trendLatest{
+  color:#102019;
+  font-size:21px;
+  line-height:1;
+  font-weight:760;
+  letter-spacing:-.6px;
+  white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+}
+.chartFrame{
+  position:relative;
+  margin:18px -1px 7px;
+  border-radius:15px;
+  overflow:hidden;
+  background:linear-gradient(180deg,rgba(242,245,241,.58),rgba(255,255,255,0) 74%);
+}
+.realChart{
+  height:170px;
+  margin:0;
+  color:#526d5e;
+}
+.chartGridLine{stroke:#e9ebe6;stroke-width:1;vector-effect:non-scaling-stroke}
+.chartSeries{
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  opacity:.96;
+}
+.chartSinglePoint{fill:currentColor}
+.chartLastHalo{fill:#fff;stroke:#809486;stroke-width:1.2;vector-effect:non-scaling-stroke}
+.chartLastPoint{fill:#365445}
+.trendRange{
+  align-items:flex-end;
+  padding:4px 1px 1px;
+  color:#949b97;
+  font-size:9px;
+}
+.trendRange b{
+  color:#35413b;
+  font-size:11px;
+  font-weight:690;
+  margin-top:3px;
+  font-variant-numeric:tabular-nums;
+}
+.trendCoverage{text-align:center;line-height:1.25}
+.trendCoverage b{display:inline;margin:0 3px 0 0;font-size:11px}
+.trendMax{text-align:right}
+.chartSkeleton{
+  height:170px;
+  margin:18px 0 8px;
+  border-radius:15px;
+  background:linear-gradient(100deg,#f0efea 20%,#f7f6f2 40%,#f0efea 60%);
+  background-size:200% 100%;
+  animation:hosShimmer 1.2s infinite linear;
+}
+@keyframes hosShimmer{to{background-position:-200% 0}}
+.emptyState{
+  min-height:150px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  gap:5px;
+  color:#66716b;
+}
+.emptyState strong{font-size:13px}
+.emptyState span{font-size:10px;color:#929995;max-width:250px;line-height:1.45}
+.principleCard{
+  padding:18px 19px;
+  background:#faf9f6;
+  box-shadow:none;
+}
+.principleKicker{
+  color:#829087;
+  font-size:8.5px;
+  line-height:1;
+  letter-spacing:1.35px;
+  font-weight:820;
+  margin-bottom:9px;
+}
+.principleCard>strong{font-size:13px;letter-spacing:-.1px}
+.principleCard p{font-size:11.5px;line-height:1.55;margin:8px 0 0}
+
+/* Acquisition / data quality */
+.acquisitionIntro{
+  max-width:470px;
+  font-size:11px;
+  line-height:1.55;
+  color:#818985;
+  margin:-4px 2px 15px;
+}
+.sourceContinuityCard{
+  position:relative;
+  padding:17px 18px;
+  overflow:hidden;
+  background:linear-gradient(145deg,#fffdf8,#fbfaf5);
+  border-color:#e3ddd1;
+}
+.sourceContinuityCard:before{
+  content:"";
+  position:absolute;
+  left:0;top:0;bottom:0;width:3px;
+  background:#a88c68;
+  opacity:.72;
+}
+.acquisitionCard{padding:18px}
+.acquisitionGroupCard{background:#fff}
+.acquisitionTop{gap:14px}
+.acquisitionTop strong{font-size:13.5px;color:#19231e;letter-spacing:-.1px}
+.acquisitionTop small{font-size:9.5px;color:#8b938f;margin-top:4px}
+.acquisitionTop>span,.acquisitionBadges span{
+  border:1px solid #ece8df;
+  background:#f6f3eb;
+  color:#7c6b55;
+  font-size:8px;
+  font-weight:720;
+  line-height:1;
+  letter-spacing:.55px;
+  padding:5px 7px;
+  text-transform:uppercase;
+}
+.acquisitionBadges{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+.acquisitionCard p,.sourceContinuityCard p{font-size:11px;line-height:1.55;color:#69736d}
+.sourceMetricList{gap:5px;margin-top:10px}
+.sourceMetricList span{
+  background:#f2f2ed;
+  border:1px solid #ecebe5;
+  color:#6b756f;
+  font-size:8px;
+  padding:5px 7px;
+  border-radius:999px;
+}
+.sourceBoundary{
+  padding-top:12px!important;
+  margin-top:13px!important;
+  border-top:1px solid #ece9e1!important;
+  color:#858d88!important;
+  font-size:9.5px!important;
+}
+.acquisitionGapHeader{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  margin:25px 2px 12px;
+}
+.acquisitionGapHeader strong{font-size:14px;letter-spacing:-.15px}
+.acquisitionGapHeader span{font-size:9px;color:#8c938f}
+.acquisitionRationale,.acquisitionNext{padding-left:11px;border-left:2px solid #ecece6}
+.acquisitionNext{border-left-color:#dbe5dd}
+.acquisitionMeta{margin-top:12px;padding-top:10px;border-top:1px solid #f0eee8}
+.acquisitionMeta span{font-size:8px;background:#f5f4f0;color:#858c87}
+.acquisitionFooter{font-size:9.5px;line-height:1.5;margin:11px 2px 0}
+
+/* Sources / sync */
+.intervalsHead strong{font-size:14px}
+.intervalsHead small{font-size:10px;color:#89918d}
+.connectedBadge{
+  border:1px solid #dfe8df;
+  background:#f0f5f0;
+  color:#50715d;
+  font-size:9px;
+  font-weight:720;
+  text-transform:uppercase;
+  letter-spacing:.4px;
+}
+.intervalsDescription{font-size:11.5px;line-height:1.55}
+.sourceList{padding:4px 18px}
+.source{padding:16px 0}
+.source strong{font-size:12px}
+.source small{font-size:9.5px}
+.source span{font-size:8.5px;text-transform:uppercase;letter-spacing:.35px}
+.syncResult{font-size:11px}
+.analysisSyncStatus{margin-top:10px;padding-top:10px;border-top:1px solid #efeee9}
+
+/* Navigation */
+nav{
+  width:min(560px,100%);
+  height:82px;
+  padding:7px 11px calc(8px + env(safe-area-inset-bottom));
+  background:rgba(250,249,246,.91);
+  backdrop-filter:blur(22px) saturate(1.25);
+  -webkit-backdrop-filter:blur(22px) saturate(1.25);
+  border-top:1px solid rgba(219,217,210,.88);
+  box-shadow:0 -8px 30px rgba(31,38,34,.035);
+  gap:2px;
+}
+nav button{
+  position:relative;
+  gap:3px;
+  min-height:54px;
+  border-radius:16px;
+  font-size:9.5px;
+  font-weight:560;
+  color:#8b928e;
+  transition:color .15s ease,background .15s ease,transform .15s ease;
+}
+nav button svg{stroke-width:1.7}
+nav button.active{
+  color:var(--hos-accent);
+  font-weight:720;
+  background:rgba(230,236,231,.72);
+}
+nav button:active{transform:scale(.98)}
+
+/* Small-screen tuning */
+@media(max-width:420px){
+  main{padding:31px 15px 106px}
+  header,.pageHeader{margin-left:6px;margin-right:6px}
+  header h1,.pageHeader h1{font-size:34px}
+  .card{border-radius:20px}
+  .grid{gap:9px}
+  .metric{min-height:108px;padding:15px 14px}
+  .metric strong{font-size:22px}
+  .trendCard{padding:18px 15px 15px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
