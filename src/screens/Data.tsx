@@ -3,6 +3,7 @@ import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import { isLiveMode } from '../state/runtime';
 import AcquisitionOpportunities from '../components/AcquisitionOpportunities';
+import { refreshAnalysisRuntimeV1 } from '../repositories/analysis-runtime';
 
 type SyncResult = {
   ok: boolean;
@@ -40,6 +41,13 @@ type SyncResult = {
     sleep_duration: number;
     oxygen_saturation: number;
     steps: number;
+  };
+
+  analysis?: {
+    status: 'completed' | 'failed';
+    as_of_date: string;
+    health_brief_version?: 'health_brief_v1';
+    error?: string;
   };
 
   error?: string;
@@ -246,9 +254,53 @@ export default function Data() {
         );
       }
 
-      setSyncResult(
-        data as SyncResult,
-      );
+      const synced = data as SyncResult;
+
+      // Analysis is downstream from raw-first sync. A failure here must not
+      // relabel a successful acquisition as a failed sync.
+      const now = new Date();
+      const asOfDate = [
+        now.getFullYear(),
+        String(now.getMonth() + 1).padStart(2, '0'),
+        String(now.getDate()).padStart(2, '0'),
+      ].join('-');
+
+      try {
+        const featureRefresh = await supabase.rpc(
+          'refresh_daily_features_v1',
+        );
+
+        if (featureRefresh.error) {
+          throw featureRefresh.error;
+        }
+
+        await refreshAnalysisRuntimeV1(
+          user!.id,
+          asOfDate,
+        );
+
+        setSyncResult({
+          ...synced,
+          analysis: {
+            status: 'completed',
+            as_of_date: asOfDate,
+            health_brief_version:
+              'health_brief_v1',
+          },
+        });
+      } catch (analysisError) {
+        setSyncResult({
+          ...synced,
+          analysis: {
+            status: 'failed',
+            as_of_date: asOfDate,
+            error:
+              analysisError instanceof Error
+                ? analysisError.message
+                : String(analysisError),
+          },
+        });
+      }
     } catch (error) {
       setSyncError(
         error instanceof Error
@@ -469,6 +521,33 @@ export default function Data() {
               Normalización V1
               completada.
             </small>
+
+            {syncResult.analysis && (
+              <div className="analysisSyncStatus">
+                <span>
+                  Análisis longitudinal
+                </span>
+                <b>
+                  {syncResult.analysis.status ===
+                  'completed'
+                    ? 'Actualizado'
+                    : 'Pendiente'}
+                </b>
+                {syncResult.analysis.status ===
+                  'failed' &&
+                  syncResult.analysis.error && (
+                    <small>
+                      Los datos se
+                      sincronizaron, pero
+                      el análisis no pudo
+                      recalcularse: {
+                        syncResult.analysis
+                          .error
+                      }
+                    </small>
+                  )}
+              </div>
+            )}
           </div>
         )}
 
