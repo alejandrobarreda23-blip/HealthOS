@@ -105,3 +105,4 @@
   font-size:10px;
   line-height:1.4
 }
+.acquisitionIntro{font-size:12px;line-height:1.45;margin:-5px 2px 12px}.acquisitionCard{padding:15px 17px}.acquisitionTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.acquisitionTop strong{display:block;font-size:14px}.acquisitionTop small{display:block;margin-top:3px;color:#8a918d;text-transform:capitalize}.acquisitionTop>span{font-size:9px;text-transform:uppercase;letter-spacing:.4px;background:#efefeb;color:#6f7872;border-radius:20px;padding:5px 7px;white-space:nowrap}.acquisitionCard p{font-size:12px;line-height:1.45;color:#68716b;margin:10px 0}.acquisitionMeta{display:flex;gap:6px;flex-wrap:wrap}.acquisitionMeta span{font-size:9px;background:#f3f3ef;color:#747d77;border-radius:12px;padding:4px 6px}
