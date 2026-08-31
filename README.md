@@ -103,3 +103,27 @@ Scientific Intelligence + Measurement Intelligence with evidence appraisal and a
 
 ## v1.9 Runtime Foundation
 Schema reconstruction (001–014), Health Connect native bridge contract + Android reader, five core normalizers, strict lab-unit conversion/plausibility gates, honest empty-live dashboard, and real sleep-anchored exposure resolution. See README_RUNTIME_V1.9.md.
+
+---
+
+## v1.11 Reconciled Runtime Intelligence
+
+The offline longitudinal-analysis work has been reconciled against the live v1.10.5 acquisition branch. Live migration head is `024`.
+
+Promoted to live runtime:
+- Daily Features V1
+- Metric Dictionary V1
+- robust Baseline Engine V1
+- Finding Registry V1
+- explicit missingness / source-transition persistence
+- persisted `health_brief_v1`
+- real Today and Trends consumers
+
+Integrated as repository modules/specifications but deliberately not live-wired yet:
+- Analysis Orchestrator V1
+- Retrospective Validation Harness V1
+- System Maturity / Evidence Ledger
+- Export / Survivability V1.2
+- Systemic Physiology / Dynamic Health research layer
+
+See `RECONCILIATION_V1.11.md` for exact status and boundaries.
