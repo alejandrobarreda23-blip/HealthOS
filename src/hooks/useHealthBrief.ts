@@ -1,29 +1,29 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useAuth } from '../auth/AuthProvider';
+import { useSubject } from '../subjects/SubjectProvider';
 import { getLatestHealthBriefV1 } from '../repositories/health-brief';
 import type { HealthBriefV1 } from '../services/health-brief-v1';
 
 export function useHealthBriefV1() {
-  const { user } = useAuth();
+  const { scope } = useSubject();
   const [data, setData] = useState<HealthBriefV1 | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const refresh = useCallback(async () => {
-    if (!user?.id) {
+    if (!scope?.dataUserId) {
       setData(null);
       return;
     }
     setLoading(true);
     try {
-      setData(await getLatestHealthBriefV1(user.id));
+      setData(await getLatestHealthBriefV1(scope.dataUserId));
       setError('');
     } catch (e: any) {
       setError(e?.message ?? 'No se pudo cargar Health Brief.');
     } finally {
       setLoading(false);
     }
-  }, [user?.id]);
+  }, [scope?.dataUserId]);
 
   useEffect(() => {
     void refresh();
