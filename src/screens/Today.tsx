@@ -3,6 +3,7 @@ import CheckIn from '../components/CheckIn';
 import EventSheet from '../components/EventSheet';
 import MetricCard from '../components/MetricCard';
 import { useHealthBriefV1 } from '../hooks/useHealthBrief';
+import { useSubject } from '../subjects/SubjectProvider';
 
 function formatMinutes(value: number | null | undefined) {
   if (value === null || value === undefined) return '—';
@@ -20,6 +21,7 @@ function baselineDetail(current: number | null | undefined, baseline: number | n
 
 export default function Today() {
   const { data, loading, error, refresh } = useHealthBriefV1();
+  const { scope } = useSubject();
   const [eventOpen, setEventOpen] = useState(false);
 
   return <>
@@ -93,8 +95,10 @@ export default function Today() {
       <p>{data.uncertainty.join(' · ')}</p>
     </section>}
 
-    <CheckIn />
-    <button className="event" onClick={() => setEventOpen(true)}>＋ Registrar evento</button>
-    {eventOpen && <EventSheet onClose={() => setEventOpen(false)} />}
+    {scope?.isSelf ? <>
+      <CheckIn />
+      <button className="event" onClick={() => setEventOpen(true)}>＋ Registrar evento</button>
+      {eventOpen && <EventSheet onClose={() => setEventOpen(false)} />}
+    </> : <section className="card adminReadOnly"><strong>Modo lectura</strong><p>Estás consultando otro perfil. Los check-ins y eventos están bloqueados.</p></section>}
   </>;
 }

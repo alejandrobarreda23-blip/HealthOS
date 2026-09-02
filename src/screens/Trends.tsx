@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useAuth } from '../auth/AuthProvider';
+import { useSubject } from '../subjects/SubjectProvider';
 import { getTrendV1, type TrendPointV1 } from '../repositories/trends';
 
 type Metric = { key: string; label: string; unit: string; format?: (value: number) => string };
@@ -41,7 +41,7 @@ function segments(points: TrendPointV1[]) {
 }
 
 export default function Trends() {
-  const { user } = useAuth();
+  const { scope } = useSubject();
   const [metricKey, setMetricKey] = useState('hrv_rmssd');
   const [windowDays, setWindowDays] = useState(90);
   const [points, setPoints] = useState<TrendPointV1[]>([]);
@@ -50,15 +50,15 @@ export default function Trends() {
   const metric = METRICS.find((m) => m.key === metricKey) ?? METRICS[0];
 
   useEffect(() => {
-    if (!user?.id) return;
+    if (!scope?.dataUserId) return;
     const end = new Date().toISOString().slice(0, 10);
     const start = minusDays(end, windowDays - 1);
     setLoading(true);
-    getTrendV1(user.id, metricKey, start, end)
+    getTrendV1(scope.dataUserId, metricKey, start, end)
       .then((result) => { setPoints(result.points); setError(''); })
       .catch((e: any) => setError(e?.message ?? 'No se pudo cargar la evolución.'))
       .finally(() => setLoading(false));
-  }, [user?.id, metricKey, windowDays]);
+  }, [scope?.dataUserId, metricKey, windowDays]);
 
   const chart = useMemo(() => {
     if (!points.length) return null;

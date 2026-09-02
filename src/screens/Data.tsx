@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../auth/AuthProvider';
+import { useSubject } from '../subjects/SubjectProvider';
 import { supabase } from '../lib/supabase';
 import { isLiveMode } from '../state/runtime';
 import AcquisitionOpportunities from '../components/AcquisitionOpportunities';
@@ -167,6 +168,8 @@ async function getFunctionErrorMessage(
 
 export default function Data() {
   const { user, signOut } = useAuth();
+  const { scope } = useSubject();
+  const readOnly = Boolean(scope && !scope.isSelf);
 
   const [syncing, setSyncing] =
     useState(false);
@@ -211,6 +214,10 @@ export default function Data() {
   ];
 
   async function syncIntervals() {
+    if (readOnly) {
+      setSyncError('Modo lectura: no puedes sincronizar datos de otro usuario.');
+      return;
+    }
     if (!supabase) {
       setSyncError(
         'Supabase no está configurado.',
@@ -357,12 +364,14 @@ export default function Data() {
           className="primary"
           onClick={syncIntervals}
           disabled={
-            syncing || !user
+            syncing || !user || readOnly
           }
         >
           {syncing
             ? 'Sincronizando…'
-            : 'Sincronizar Intervals.icu'}
+            : readOnly
+              ? 'Sincronización bloqueada · modo lectura'
+              : 'Sincronizar Intervals.icu'}
         </button>
 
         {syncResult && (
@@ -594,6 +603,8 @@ export default function Data() {
       </section>
 
       {user && <AcquisitionOpportunities />}
+
+      {readOnly && <section className="card adminReadOnly"><strong>Modo lectura</strong><p>Las fuentes y oportunidades corresponden al perfil seleccionado. La sincronización y las escrituras están desactivadas.</p></section>}
 
       {user && (
         <section className="card">
