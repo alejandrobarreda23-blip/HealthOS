@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import { isLiveMode } from '../state/runtime';
 import AcquisitionOpportunities from '../components/AcquisitionOpportunities';
 import MeasurementActions from '../components/MeasurementActions';
+import AdminSubjectIntegrations from '../components/AdminSubjectIntegrations';
 import { refreshAnalysisRuntimeV1 } from '../repositories/analysis-runtime';
 
 type SyncResult = {
@@ -171,6 +172,7 @@ export default function Data() {
   const { user, signOut } = useAuth();
   const { scope } = useSubject();
   const readOnly = Boolean(scope && !scope.isSelf);
+  const adminManagingSubject = Boolean(scope && scope.role === 'admin' && !scope.isSelf);
 
   const [syncing, setSyncing] =
     useState(false);
@@ -336,6 +338,11 @@ export default function Data() {
         </p>
       </header>
 
+      {scope && adminManagingSubject && (
+        <AdminSubjectIntegrations scope={scope} />
+      )}
+
+      {!adminManagingSubject && (
       <section className="card">
         <div className="intervalsHead">
           <div>
