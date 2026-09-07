@@ -580,6 +580,7 @@ export default function Data() {
           </p>
         )}
       </section>
+      )}
 
       <section className="card sourceList">
         {sources.map(
