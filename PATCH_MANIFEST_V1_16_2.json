@@ -1,0 +1,66 @@
+{
+  "version": "1.16.2",
+  "name": "Admin-managed subject integrations V1",
+  "files": [
+    {
+      "path": "MULTIUSER_INTEGRATIONS_V1.md",
+      "sha256": "8994dde044a31b553ead283e2f8fd71e3d1e0c35632ec8b73ce9e2224a1caa6b",
+      "bytes": 1562
+    },
+    {
+      "path": "PATCH_README_V1_16_2.md",
+      "sha256": "8d2d19fc747d6dcadfdcdd8685f7bd4e18430e8fbe9bb32c25b5c43857ebf58f",
+      "bytes": 1664
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "a8d46f34aa1473867a9f986c1d359f8c2c8a819b0624695e93bdc170bf549778",
+      "bytes": 120662
+    },
+    {
+      "path": "package.json",
+      "sha256": "742bf11372ffeb59c81b49360f88ab96c6d4c503aba9f13c341653225dc35965",
+      "bytes": 739
+    },
+    {
+      "path": "src/app/styles.css",
+      "sha256": "a83afec711498f41cc0ca744e5ae05e3578fa753273a47e36c569f1469135aaa",
+      "bytes": 44504
+    },
+    {
+      "path": "src/components/AdminSubjectIntegrations.tsx",
+      "sha256": "66129d95cd809ef0b2957089038b199ac9a72d05fc7befed8b55ff85590f9054",
+      "bytes": 9191
+    },
+    {
+      "path": "src/repositories/admin-integrations.ts",
+      "sha256": "e786a78372bd5f8a276f9ec883192df4e384338ea8389490bc37fe1aae315bc2",
+      "bytes": 2235
+    },
+    {
+      "path": "src/screens/Data.tsx",
+      "sha256": "7f0fd68cb7db2b27504f7630e1cde86f33f0eb06d37db528049eddb46c9fda20",
+      "bytes": 14061
+    },
+    {
+      "path": "supabase/functions/rapid-service/index.ts",
+      "sha256": "76310594133f1fa16d987fef86b62016d8bec3dba570c511d6d38ad7382e223d",
+      "bytes": 19160
+    },
+    {
+      "path": "supabase/migrations/026_admin_integrations_v1.sql",
+      "sha256": "8a046ceb502e522b60926f278b2431e67b31e30140de741e8bfdf23eb316e589",
+      "bytes": 8928
+    },
+    {
+      "path": "supabase/migrations/027_admin_daily_features_v1.sql",
+      "sha256": "59893fa789d1a0f477b369bd5fd5fbfd9e1756df8e5606e2313fdc06d05f042b",
+      "bytes": 5746
+    },
+    {
+      "path": "tests/admin-integrations-contract.test.ts",
+      "sha256": "dc269d314d410dc201ac59b32af5239c58f2661beb389ef10ebe21d930d3b8e4",
+      "bytes": 950
+    }
+  ]
+}
