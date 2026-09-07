@@ -62,7 +62,7 @@ export default function Trends() {
 
   const chart = useMemo(() => {
     if (!points.length) return null;
-    const width = 460, height = 172, padX = 10, padY = 16;
+    const width = 1080, height = 300, padX = 18, padY = 24;
     const values = points.map((p) => p.value);
     const min = Math.min(...values), max = Math.max(...values), range = Math.max(max - min, 1);
     const start = new Date(`${points[0].date}T12:00:00Z`).getTime();
@@ -101,6 +101,7 @@ export default function Trends() {
       <div className="trendWindows">{[30, 90, 365].map((days) => <button key={days} className={windowDays === days ? 'selected' : ''} onClick={() => setWindowDays(days)}>{days === 365 ? '1 año' : `${days} d`}</button>)}</div>
     </div>
 
+    <div className="trendDesktopGrid">
     <section className="card trendCard">
       <div className="trendHead">
         <div>
@@ -136,5 +137,6 @@ export default function Trends() {
       <strong>Los huecos también son información.</strong>
       <p className="muted">HealthOS no interpola periodos sin reloj ni transforma ausencia en cero. Los baselines se calculan por separado y exigen cobertura suficiente.</p>
     </section>
+    </div>
   </>;
 }

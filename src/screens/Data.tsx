@@ -4,6 +4,7 @@ import { useSubject } from '../subjects/SubjectProvider';
 import { supabase } from '../lib/supabase';
 import { isLiveMode } from '../state/runtime';
 import AcquisitionOpportunities from '../components/AcquisitionOpportunities';
+import MeasurementActions from '../components/MeasurementActions';
 import { refreshAnalysisRuntimeV1 } from '../repositories/analysis-runtime';
 
 type SyncResult = {
@@ -603,6 +604,8 @@ export default function Data() {
       </section>
 
       {user && <AcquisitionOpportunities />}
+
+      {user && !readOnly && <MeasurementActions />}
 
       {readOnly && <section className="card adminReadOnly"><strong>Modo lectura</strong><p>Las fuentes y oportunidades corresponden al perfil seleccionado. La sincronización y las escrituras están desactivadas.</p></section>}
 
