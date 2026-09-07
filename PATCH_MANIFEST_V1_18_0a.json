@@ -1,0 +1,15 @@
+{
+  "version": "1.18.0a",
+  "files": [
+    {
+      "path": "README.md",
+      "sha256": "fc1f4a8bb7df88e50f0fc1643a91f532a49d8273287c9b61814dc9275420d883",
+      "bytes": 625
+    },
+    {
+      "path": "src/repositories/body-history.ts",
+      "sha256": "3a5b1508270916ca3929cd16dbac5a6af05c4cab0daf2ed49348b9f982d05d43",
+      "bytes": 5448
+    }
+  ]
+}
