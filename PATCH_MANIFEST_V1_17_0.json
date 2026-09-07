@@ -1,0 +1,56 @@
+{
+  "version": "1.17.0",
+  "base": "HealthOS-main (7).zip",
+  "files": [
+    {
+      "path": "PATCH_README_V1_17_0.md",
+      "sha256": "f01bd35cf5bf79a7be490a67163097fe4469454c7de7adf19b120f8e475f1762",
+      "bytes": 1597
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "42ad7bc5aadace7f7c18174fd03e9bfb48ccfb223d6bb9462e3028c422caf2a3",
+      "bytes": 120662
+    },
+    {
+      "path": "package.json",
+      "sha256": "93d0d3919f7217160ed67c85a821c0302e0f152efdc1050cd3de544b2b96b414",
+      "bytes": 739
+    },
+    {
+      "path": "src/app/styles.css",
+      "sha256": "d2ccdfbc523bbd311635a15b1bf23b25a9b1e108116ad582a6e8f6f4ae29ba91",
+      "bytes": 54928
+    },
+    {
+      "path": "src/components/BodyMap.tsx",
+      "sha256": "2e5758eb74181593387611321e015c5f22cb1ef78b7cd556f77bfadbe843e352",
+      "bytes": 6709
+    },
+    {
+      "path": "src/repositories/trends.ts",
+      "sha256": "85c8201f94ba5d9fb57fb76498fececceef283ceae2fedcf0da36514370bfb10",
+      "bytes": 3360
+    },
+    {
+      "path": "src/screens/Aging.tsx",
+      "sha256": "b830fad441e3b5dfca6594223c6ef1b3b4b95ab49a336a1cce3cdc656b8cdb3d",
+      "bytes": 5892
+    },
+    {
+      "path": "src/screens/Body.tsx",
+      "sha256": "967024d7fe4d7920973ff29bc16b6af562ffebe3fb01b26c0b83bed9bc7d7321",
+      "bytes": 8165
+    },
+    {
+      "path": "src/screens/Trends.tsx",
+      "sha256": "0bad7e40601aa77a8a4f0858be03a58af219800bb7e8a2de06e192c750fab992",
+      "bytes": 11122
+    },
+    {
+      "path": "tests/visual-product-contract-v1.test.ts",
+      "sha256": "d91d79e4fb6a6ff725aea7cc32542233fd3b1dd2c2b8616097fec47c5927bbcf",
+      "bytes": 941
+    }
+  ]
+}
