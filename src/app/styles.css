@@ -548,7 +548,240 @@ nav button:active{transform:scale(.98)}
   *,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 
-/* =========================================================
-   HealthOS Multiuser V1
-   ========================================================= */
-.subjectBanner{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:-17px 0 22px;padding:10px 12px;border:1px solid #ded8c9;background:#f6f1e7;border-radius:14px}.subjectBanner.self{background:#edf2ed;border-color:#d9e2db}.subjectBanner div{min-width:0}.subjectBanner span{display:block;font-size:8px;letter-spacing:1.15px;font-weight:820;color:#8a7456}.subjectBanner.self span{color:#587060}.subjectBanner strong{display:block;margin-top:2px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.subjectBanner button{border:0;background:transparent;color:#4c6255;font-size:11px;font-weight:700;padding:6px;cursor:pointer}.adminStats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.adminStats div{padding:4px 2px}.adminStats span{display:block;color:var(--hos-muted);font-size:10px}.adminStats strong{display:block;margin-top:4px;font-size:26px;letter-spacing:-.8px}.adminSearch{box-sizing:border-box;width:100%;min-height:44px;margin:2px 0 13px;padding:0 14px;border:1px solid var(--hos-line-strong);border-radius:14px;background:#fff;color:var(--hos-ink);font:inherit;outline:none}.adminSearch:focus{border-color:#9cab9f;box-shadow:0 0 0 3px rgba(63,93,78,.07)}.adminUserList{display:grid;gap:8px}.adminUserCard{appearance:none;width:100%;display:flex;align-items:center;gap:12px;text-align:left;color:inherit;cursor:pointer;margin-bottom:0}.adminUserCard.selectedSubject{border-color:#aebcaf;background:#fbfdf9}.adminAvatar{display:grid;place-items:center;width:38px;height:38px;flex:0 0 38px;border-radius:50%;background:var(--hos-accent-soft);color:var(--hos-accent)}.adminUserBody{min-width:0;flex:1}.adminUserBody strong{display:block;font-size:13px}.adminUserBody small{display:block;margin-top:3px;color:var(--hos-muted);font-size:10px;text-transform:capitalize}.adminSelfIcon{color:#607868}.adminReadOnly{background:#faf7f1;border-color:#e5ddcf;box-shadow:none}.adminReadOnly strong{font-size:12px;color:#765f45}.adminReadOnly p{margin:6px 0 0;color:#7c756b;font-size:11px;line-height:1.45}.adminNav button{min-width:0}.adminNav button span{font-size:8px}
+/* HealthOS V1.11.6 — desktop-first responsive shell */
+:root{
+  --hos-sidebar:232px;
+  --hos-content-max:1440px;
+  --hos-page-x:clamp(24px,4vw,64px);
+}
+
+.shell{
+  max-width:none;
+  width:100%;
+  margin:0;
+  min-height:100vh;
+  background:var(--hos-bg,#f7f6f2);
+}
+
+.contentFrame{
+  width:min(100%,var(--hos-content-max));
+  margin:0 auto;
+}
+
+main{
+  min-width:0;
+  padding:44px var(--hos-page-x) 96px;
+}
+
+@media (min-width: 960px){
+  .shell{
+    display:grid;
+    grid-template-columns:var(--hos-sidebar) minmax(0,1fr);
+    align-items:start;
+  }
+
+  nav{
+    position:sticky;
+    top:0;
+    left:auto;
+    bottom:auto;
+    transform:none;
+    width:var(--hos-sidebar);
+    height:100vh;
+    padding:26px 16px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    border-top:0;
+    border-right:1px solid #e7e4dc;
+    background:rgba(250,249,246,.94);
+    backdrop-filter:blur(18px);
+    z-index:10;
+  }
+
+  .navBrand{
+    display:flex;
+    gap:11px;
+    align-items:center;
+    padding:6px 8px 25px;
+    margin-bottom:6px;
+    border-bottom:1px solid #ece9e2;
+  }
+
+  .navBrandMark{
+    display:grid;
+    place-items:center;
+    width:36px;
+    height:36px;
+    border-radius:11px;
+    background:#22352b;
+    color:#fff;
+    font-weight:800;
+    letter-spacing:-.04em;
+  }
+
+  .navBrand strong{display:block;font-size:14px;letter-spacing:-.2px;color:#1b261f}
+  .navBrand small{display:block;margin-top:2px;font-size:9px;color:#8a918c}
+
+  nav button{
+    flex:0 0 auto;
+    width:100%;
+    min-height:46px;
+    padding:0 12px;
+    border-radius:12px;
+    display:grid;
+    grid-template-columns:22px 1fr;
+    gap:10px;
+    align-items:center;
+    justify-items:start;
+    font-size:12px;
+    text-align:left;
+  }
+
+  nav button.active{
+    background:#e9eee9;
+    color:#294236;
+  }
+
+  main{
+    grid-column:2;
+    width:100%;
+    padding:52px var(--hos-page-x) 80px;
+  }
+
+  header{margin:0 0 30px}
+  h1{font-size:42px;letter-spacing:-1.8px}
+  .pageLead{max-width:680px;font-size:15px}
+
+  .hero.card{
+    padding:22px 24px;
+  }
+
+  .grid{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:14px;
+  }
+
+  .metric{
+    min-height:122px;
+    padding:18px 20px;
+  }
+
+  .metric strong{font-size:25px}
+
+  .trendControls{
+    display:flex;
+    justify-content:space-between;
+    gap:18px;
+    align-items:center;
+    margin-bottom:18px;
+  }
+
+  .trendMetricChips,.trendWindows{
+    overflow:visible;
+    flex-wrap:wrap;
+  }
+
+  .trendDesktopGrid{
+    display:grid;
+    grid-template-columns:minmax(0,2.4fr) minmax(280px,.8fr);
+    gap:18px;
+    align-items:start;
+  }
+
+  .trendCard{
+    min-height:430px;
+    padding:24px 26px 20px;
+  }
+
+  .realChart{
+    height:300px;
+    margin:22px 0 10px;
+  }
+
+  .trendLatest{font-size:28px}
+  .trendMetricLabel{font-size:16px}
+
+  .principleCard{
+    position:sticky;
+    top:28px;
+    margin:0;
+    min-height:210px;
+    padding:24px;
+  }
+
+  .principleCard strong{font-size:18px;line-height:1.3}
+  .principleCard p{font-size:13px;line-height:1.65}
+
+  .sourceContinuityCard,
+  .acquisitionGroupCard{
+    padding:22px 24px;
+  }
+
+  .acquisitionIntro{max-width:760px;font-size:13px}
+
+  .acquisitionGroupCard{
+    display:grid;
+    grid-template-columns:minmax(0,1.25fr) minmax(280px,.75fr);
+    column-gap:28px;
+    align-items:start;
+  }
+
+  .acquisitionGroupCard .acquisitionTop,
+  .acquisitionGroupCard .sourceMetricList,
+  .acquisitionGroupCard .acquisitionMeta{
+    grid-column:1 / -1;
+  }
+
+  .acquisitionGroupCard .acquisitionRationale{grid-column:1}
+  .acquisitionGroupCard .acquisitionNext{grid-column:2}
+
+  .finding.card{
+    padding:20px 22px;
+  }
+
+  .systemGrid{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:14px;
+  }
+
+  .agingHero{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  .sheet{
+    width:min(720px,calc(100% - 48px));
+    border-radius:24px;
+    margin:0 auto 24px;
+  }
+}
+
+@media (min-width: 1280px){
+  .grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .systemGrid{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .trendCard{min-height:470px}
+  .realChart{height:340px}
+}
+
+@media (max-width: 959px){
+  .navBrand{display:none}
+  .contentFrame{width:100%}
+}
+
+/* HealthOS v1.12 — Measurement campaigns */
+.measurementSection{margin-top:28px}.measurementGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.measurementCard{display:flex;flex-direction:column;gap:16px}.measurementCard strong{display:block;font-size:1rem}.measurementCard small{display:block;margin-top:4px;color:var(--hos-text-muted,#6b756f)}.measurementInline{display:flex;gap:10px}.measurementInline input{min-width:0;flex:1}.measurementCard input,.measurementCard select{border:1px solid var(--hos-border,#d9ddd9);border-radius:12px;background:var(--hos-surface,#fff);padding:11px 12px;font:inherit;color:inherit}.measurementCard button{border:0;border-radius:12px;padding:11px 14px;font:inherit;font-weight:650;cursor:pointer;background:var(--hos-ink,#243b33);color:#fff}.measurementCard button:disabled{opacity:.45;cursor:not-allowed}.measurementHead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.measurementProgress{white-space:nowrap;border-radius:999px;padding:6px 9px;background:var(--hos-soft,#f1f3ef);font-size:.78rem}.bpForm{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.bpForm label{display:flex;flex-direction:column;gap:6px;font-size:.78rem;color:var(--hos-text-muted,#6b756f)}.campaignStatus{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding-top:8px;border-top:1px solid var(--hos-border,#e2e5e1);font-size:.78rem;color:var(--hos-text-muted,#6b756f)}.campaignStatus .secondaryButton{margin-left:auto;background:transparent;color:var(--hos-ink,#243b33);border:1px solid var(--hos-border,#d9ddd9)}.measurementMessage{margin-top:12px;padding:10px 12px;border-radius:12px;background:var(--hos-soft,#f1f3ef);font-size:.85rem}@media(max-width:800px){.measurementGrid{grid-template-columns:1fr}.bpForm{grid-template-columns:1fr 1fr}}
+
+/* HealthOS v1.16 — Body Overview */
+.bodyScreen{--body-green:#355848;--body-green-2:#6d8c7b;--body-blue:#8197b5;--body-violet:#a498bd;--body-amber:#d98a22;--body-paper:#fbfaf6;--body-ink:#18251e}
+.bodyHeader{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:24px}.bodyHeader h1{font-family:Georgia,'Times New Roman',serif;font-weight:500;font-size:48px;letter-spacing:-2px;color:#234132}.bodyStatePill{display:inline-flex;align-items:center;gap:9px;padding:9px 13px;border:1px solid #dedbd2;border-radius:999px;background:rgba(255,255,255,.7);font-size:11px;color:#6a736e;white-space:nowrap}.bodyStatePill span{width:7px;height:7px;border-radius:50%;background:#b8a58e}.bodyStatePill.calm span{background:#708c7c}.bodyWorkspace{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:18px;align-items:stretch}.bodyCanvasPanel{position:relative;min-height:720px;display:grid;grid-template-columns:minmax(190px,.7fr) minmax(340px,1.3fr) minmax(190px,.7fr);gap:18px;align-items:center;padding:28px 24px 18px;border:1px solid #e3dfd5;border-radius:28px;background:radial-gradient(circle at 50% 42%,#fff 0%,#fbfaf6 56%,#f6f4ee 100%);box-shadow:0 22px 55px rgba(41,52,45,.055);overflow:hidden}.bodyCanvasPanel:before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(83,100,89,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(83,100,89,.025) 1px,transparent 1px);background-size:56px 56px;mask-image:radial-gradient(circle,#000 0%,transparent 75%);pointer-events:none}.bodyCanvasCore{position:relative;z-index:1;align-self:stretch;display:flex;flex-direction:column;justify-content:center}.bodyMap{position:relative;width:min(100%,480px);margin:auto}.bodyMap svg{display:block;width:100%;height:auto;overflow:visible}.bodyOutline{fill:none;stroke:#a8aca7;stroke-width:1.45;stroke-linecap:round}.bodyMeasured{fill:none;stroke:var(--body-green);stroke-width:1.8;stroke-linecap:round;opacity:.78}.bodyMeasured.bodyAnimated path{stroke-dasharray:14 9;animation:bodyFlow 9s linear infinite}.bodyDerived{fill:none;stroke:var(--body-blue);stroke-width:1.25;stroke-dasharray:7 8;opacity:.75}.bodyAtmosphere{fill:none;stroke:var(--body-violet);stroke-width:1.1;stroke-dasharray:2 9;opacity:.42}.bodyNodes circle{fill:#fbfaf6;stroke:#63806f;stroke-width:1.5}.bodyFog ellipse{fill:#e7e8e2;opacity:.8}.bodyFinding circle:first-child{fill:var(--body-amber);stroke:#fff6e9;stroke-width:3}.bodyFindingRing{fill:none;stroke:var(--body-amber);stroke-width:2;opacity:.55}.bodyStillnessNote{position:absolute;left:50%;bottom:8%;transform:translateX(-50%);padding:7px 10px;border-radius:999px;background:rgba(248,247,243,.88);border:1px solid #e5e2db;color:#7a827d;font-size:10px;white-space:nowrap}.bodyMapFogged .bodyMeasured,.bodyMapFogged .bodyDerived{opacity:.28}.bodyMapFogged .bodyAtmosphere{opacity:.6}@keyframes bodyFlow{to{stroke-dashoffset:-92}}
+.bodySystemRail{position:relative;z-index:2;display:flex;flex-direction:column;gap:15px}.bodySystemCard{display:grid;grid-template-columns:34px 1fr;gap:11px;min-height:128px;padding:16px;border:1px solid rgba(222,219,210,.9);border-radius:17px;background:rgba(255,255,252,.83);backdrop-filter:blur(9px);box-shadow:0 9px 24px rgba(48,57,51,.035)}.bodySystemIcon{width:34px;height:34px;display:grid;place-items:center;border-radius:11px;background:#f0f3ee;color:#3d604e}.bodySystemCard strong{display:block;font-size:13px;color:#26382e}.bodySystemCard span{display:block;margin-top:7px;font-size:10px;color:#596860}.bodySystemCard small{display:block;margin-top:4px;font-size:9.5px;line-height:1.35;color:#8a918c}.bodyTimeline{margin-top:auto;padding:14px 16px 11px;border:1px solid #e3e0d8;border-radius:16px;background:rgba(255,255,253,.84)}.bodyTimelineTop,.bodyTimelineLegend{display:flex;justify-content:space-between;gap:12px}.bodyTimelineTop{font-size:10px;color:#7d8580}.bodyTimelineTop strong{font-size:10px;color:#31473b}.bodyTimelineTrack{position:relative;height:36px;margin:9px 0 3px;border-bottom:1px solid #dadbd6;background:linear-gradient(180deg,transparent 45%,rgba(78,105,90,.06) 46%,rgba(78,105,90,.01) 100%);overflow:hidden}.bodyTimelineTrack:before{content:"";position:absolute;left:0;right:0;top:17px;height:1px;background:linear-gradient(90deg,transparent,#87a092 12%,#a8aeb0 30%,#789582 50%,#b1a9bf 66%,#849b90 85%,transparent)}.bodyTimelineTrack i{position:absolute;top:8px;width:2px;height:25px;background:#365c49;border-radius:2px}.bodyTimelineTrack i:before{content:"";position:absolute;left:-3px;top:-3px;width:8px;height:8px;border-radius:50%;background:#365c49}.bodyTimelineTrack span.gap{position:absolute;right:0;top:0;bottom:0;width:24%;background:linear-gradient(90deg,transparent,rgba(226,226,220,.85));filter:blur(2px)}.bodyTimelineLegend small{font-size:8px;color:#9a9f9b}
+.bodyDossier{display:flex;flex-direction:column;gap:13px}.bodyDossierCard{margin:0;padding:19px;border:1px solid #e1ded5;border-radius:20px;background:rgba(255,255,252,.93);box-shadow:0 8px 26px rgba(43,54,47,.035)}.bodyDossierLabel{margin-bottom:12px;font-size:9px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:#748078}.bodyDossierCard>strong{display:block;font-size:14px;color:#22352b}.bodyDossierCard p{font-size:11px;line-height:1.55;color:#6c766f}.bodyFindingBeacon{width:39px;height:39px;display:grid;place-items:center;margin:2px 0 13px;border-radius:50%;background:radial-gradient(circle,rgba(217,138,34,.23),rgba(217,138,34,.05) 55%,transparent 58%)}.bodyFindingBeacon span{width:12px;height:12px;border-radius:50%;background:var(--body-amber);box-shadow:0 0 0 4px #fff,0 0 0 6px rgba(217,138,34,.32)}.bodyEvidenceMeta{margin-top:12px;padding-top:10px;border-top:1px solid #efede7;font-size:9px;color:#8e948f}.bodyCalmMark{width:38px;height:38px;display:grid;place-items:center;margin-bottom:12px;border-radius:50%;background:#edf2ed;color:#466553}.bodyCoverageValue{font-family:Georgia,serif;font-size:39px;color:#274536}.bodyCoverageValue small{font:inherit;font-size:15px}.bodyCoverageBar{height:5px;margin:8px 0 12px;border-radius:99px;background:#ecebe5;overflow:hidden}.bodyCoverageBar i{display:block;height:100%;border-radius:99px;background:#557362}.bodyLegendCard>div:not(.bodyDossierLabel){display:grid;grid-template-columns:44px 1fr;align-items:center;gap:8px;margin:10px 0;font-size:10px;color:#47534c}.bodyLegendCard small{display:block;grid-column:2;color:#929792;font-size:8.5px}.legendLine{width:40px;height:1px;background:#537261}.legendLine.derived{background:repeating-linear-gradient(90deg,#8397b3 0 7px,transparent 7px 12px)}.legendLine.inferred{background:repeating-linear-gradient(90deg,#a498bd 0 2px,transparent 2px 7px)}.legendLine.reported{background:linear-gradient(90deg,transparent 0,#a68d75 12%,#a68d75 30%,transparent 34%,#a68d75 42%,#a68d75 72%,transparent 76%)}.bodyPrincipleCard{background:#f8f6f0}.bodyPrincipleCard p{margin-bottom:0}
+@media(max-width:1180px){.bodyWorkspace{grid-template-columns:1fr}.bodyDossier{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.bodyCanvasPanel{grid-template-columns:180px minmax(300px,1fr) 180px}}
+@media(max-width:860px){.bodyHeader{align-items:flex-start;flex-direction:column}.bodyHeader h1{font-size:42px}.bodyCanvasPanel{min-height:auto;grid-template-columns:1fr;padding:20px}.bodyCanvasCore{order:-1}.bodySystemRail{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.bodySystemCard{min-height:110px}.bodyDossier{grid-template-columns:1fr}.bodyMap{max-width:400px}.bodyTimeline{margin-top:6px}}
+@media(max-width:620px){.bodySystemRail{grid-template-columns:1fr 1fr}.bodySystemCard{padding:13px;min-height:104px}.bodyStatePill{white-space:normal}.bodyMap{max-width:330px}.bodyStillnessNote{font-size:9px}.bodyHeader h1{font-size:38px}}
+@media(prefers-reduced-motion:reduce){.bodyMeasured.bodyAnimated path{animation:none}.bodyScreen *{scroll-behavior:auto!important;transition:none!important}}
+
+/* HealthOS v1.16.1 — Multiuser integration */
+.subjectBanner{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:-17px 0 22px;padding:10px 12px;border:1px solid #ded8c9;background:#f6f1e7;border-radius:14px}.subjectBanner.self{background:#edf2ed;border-color:#d9e2db}.subjectBanner div{min-width:0}.subjectBanner span{display:block;font-size:8px;letter-spacing:1.15px;font-weight:820;color:#8a7456}.subjectBanner.self span{color:#587060}.subjectBanner strong{display:block;margin-top:2px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.subjectBanner button{border:0;background:transparent;color:#4c6255;font-size:11px;font-weight:700;padding:6px;cursor:pointer}.adminStats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.adminStats div{padding:4px 2px}.adminStats span{display:block;color:var(--hos-muted);font-size:10px}.adminStats strong{display:block;margin-top:4px;font-size:26px;letter-spacing:-.8px}.adminSearch{box-sizing:border-box;width:100%;min-height:44px;margin:2px 0 13px;padding:0 14px;border:1px solid var(--hos-line-strong);border-radius:14px;background:#fff;color:var(--hos-ink);font:inherit;outline:none}.adminSearch:focus{border-color:#9cab9f;box-shadow:0 0 0 3px rgba(63,93,78,.07)}.adminUserList{display:grid;gap:8px}.adminUserCard{appearance:none;width:100%;display:flex;align-items:center;gap:12px;text-align:left;color:inherit;cursor:pointer;margin-bottom:0}.adminUserCard.selectedSubject{border-color:#aebcaf;background:#fbfdf9}.adminAvatar{display:grid;place-items:center;width:38px;height:38px;flex:0 0 38px;border-radius:50%;background:var(--hos-accent-soft);color:var(--hos-accent)}.adminUserBody{min-width:0;flex:1}.adminUserBody strong{display:block;font-size:13px}.adminUserBody small{display:block;margin-top:3px;color:var(--hos-muted);font-size:10px;text-transform:capitalize}.adminSelfIcon{color:#607868}.adminReadOnly{background:#faf7f1;border-color:#e5ddcf;box-shadow:none}.adminReadOnly strong{font-size:12px;color:#765f45}.adminReadOnly p{margin:6px 0 0;color:#7c756b;font-size:11px;line-height:1.45}.adminNav button{min-width:0}
+@media(min-width:960px){.subjectBanner{margin:-18px 0 28px;padding:12px 15px}.adminStats{grid-template-columns:repeat(4,minmax(0,1fr))}.adminUserList{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.adminNav button span{font-size:12px}}
+@media(max-width:959px){.adminNav button span{font-size:8px}}
