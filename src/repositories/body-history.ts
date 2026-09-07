@@ -87,7 +87,12 @@ export async function getBodyHistory(
     if (!date || !metricKey || !Number.isFinite(numeric)) continue;
 
     const day = ensure(date);
-    const bucket = day.values.get(metricKey) ?? {
+    const bucket: {
+      values: number[];
+      unit: string | null;
+      evidence: BodyEvidenceKind[];
+      providers: string[];
+    } = day.values.get(metricKey) ?? {
       values: [],
       unit: typeof (row as any).unit === 'string' ? (row as any).unit : null,
       evidence: [],
