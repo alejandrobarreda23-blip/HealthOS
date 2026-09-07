@@ -1,0 +1,84 @@
+{
+  "version": "1.18.0",
+  "name": "Body V3 / Organism Workspace",
+  "base": "HealthOS v1.17.0 + current multiuser runtime",
+  "changed_files": [
+    {
+      "path": "BODY_V3_ORGANISM_WORKSPACE.md",
+      "bytes": 1424,
+      "sha256": "5a705df7c1aadb6a802fe3fe57aa0add655e7f24c68e65f4872426c715b4aa77"
+    },
+    {
+      "path": "PATCH_README_V1_18_0.md",
+      "bytes": 1562,
+      "sha256": "1fb7181735b5e07799c9bb71fc060c5a52e5ea3c6aeb1027a77336be732ca34d"
+    },
+    {
+      "path": "package-lock.json",
+      "bytes": 120662,
+      "sha256": "8049bd76edc5f1246995e111d280edeb4fc3aa089dbf2b94bbbbf4002d236657"
+    },
+    {
+      "path": "package.json",
+      "bytes": 739,
+      "sha256": "817c0bd24c31068d5bd605df09fe35e4114ff5b7a51cd2ab521724d6df27784e"
+    },
+    {
+      "path": "src/app/styles.css",
+      "bytes": 69070,
+      "sha256": "9fd7c185e121a819398accc9bd4ad666d230f54c5200e02f7fe62d5bc10d329a"
+    },
+    {
+      "path": "src/body/view-state.ts",
+      "bytes": 3526,
+      "sha256": "524cc5e1678889c6dba71183b759f7e68f8ac25679536dcf7356b4de4f94307d"
+    },
+    {
+      "path": "src/components/BodyMap.tsx",
+      "bytes": 220,
+      "sha256": "bd7ca750c2aa1fbc1a1d6a04c38303c2a690733f96ebed024d817dcf96c89c62"
+    },
+    {
+      "path": "src/components/body/BodyFigure.tsx",
+      "bytes": 12536,
+      "sha256": "d30f702f373c440ee795f42fede5c39e56e5bdaabdc860c74eb3c7b6553b1289"
+    },
+    {
+      "path": "src/components/body/BodySystemCard.tsx",
+      "bytes": 1433,
+      "sha256": "dc4c9b050de7228e8b3c592a66e7c0b8ca0696837468656a3456dcc31a887f76"
+    },
+    {
+      "path": "src/components/body/BodyTimeline.tsx",
+      "bytes": 3483,
+      "sha256": "cffa13614210c83f067c0ffbc8d11e35dae4e4bdf692e31e2d83b8164aebfa5c"
+    },
+    {
+      "path": "src/hooks/useBodyHistory.ts",
+      "bytes": 1297,
+      "sha256": "2994eb74f314aa80739215babb95a2e62b248d42e13533e031f9704cd5b83c7c"
+    },
+    {
+      "path": "src/repositories/body-history.ts",
+      "bytes": 5325,
+      "sha256": "f098d43639f5d402ea3150bbc393e91378d47c58ffe98186b1123f0aa31d9919"
+    },
+    {
+      "path": "src/screens/Body.tsx",
+      "bytes": 18272,
+      "sha256": "fbf2582f6b6fac2ec467bc90940a75648f772b4ecfdd03b2865aaed6d5073a9f"
+    },
+    {
+      "path": "tests/body-v3-contract.test.ts",
+      "bytes": 1913,
+      "sha256": "4551e6e70217f2ec528c4b3aa7e1204819355bb4b630ffc58401a675b3ca1fce"
+    },
+    {
+      "path": "tests/visual-product-contract-v1.test.ts",
+      "bytes": 999,
+      "sha256": "aca8459731273f820b23f8ffae5894b95091cac7e018380dd254bf2b3a6f3198"
+    }
+  ],
+  "supabase_migrations": [],
+  "edge_functions_changed": false
+}
