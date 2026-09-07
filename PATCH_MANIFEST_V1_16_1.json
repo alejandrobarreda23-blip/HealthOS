@@ -1,0 +1,221 @@
+{
+  "patch": "HealthOS v1.16.1 Integrated Product Drop",
+  "base_assumption": "HealthOS 1.11.5 + Multiuser V1 already merged; Multiuser V1.2 SQL already applied",
+  "supabase_new_migrations": [
+    "025_measurement_campaigns_v1.sql"
+  ],
+  "do_not_reapply": [
+    "Multiuser V1.2 SQL already applied"
+  ],
+  "files": [
+    {
+      "path": "MIGRATIONS_HEAD",
+      "sha256": "1c2e98d8f132da2bd7650b4053073098c0f2f806dbb9a3c8d10c72eb3cb45ddd",
+      "bytes": 4,
+      "kind": "modified"
+    },
+    {
+      "path": "MULTIUSER_COMPATIBILITY_V1_16_1.md",
+      "sha256": "75e2b273857c83c63edfa781c5ae9acd73a3047db730f66fe1e7ace9f0250949",
+      "bytes": 1036,
+      "kind": "new"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "06e3587227d50fe0c3af8574eba784d30f79c16a8dbc60aece1da7c520b5da6c",
+      "bytes": 120662,
+      "kind": "modified"
+    },
+    {
+      "path": "BODY_GRAMMAR_CONTRACT_TESTS_V1.md",
+      "sha256": "d40d8bbcd71b69f380d680cf67ced759d00c8cb3b849296a9e236ac0ca2565df",
+      "bytes": 1528,
+      "kind": "new"
+    },
+    {
+      "path": "PATCH_README_V1_16_1.md",
+      "sha256": "824e0348f2d1d43654032b09061d85f38d2250973efd8e44a96b37d948dde9bc",
+      "bytes": 2334,
+      "kind": "new"
+    },
+    {
+      "path": "package.json",
+      "sha256": "0dc9387f9fb5c2dfdb6be3616a05057aad3913d914efb78d377f62fd60e8ae66",
+      "bytes": 739,
+      "kind": "modified"
+    },
+    {
+      "path": "BODY_GRAMMAR_V1.md",
+      "sha256": "7d90e93dee0e7b6c51c6b48830318174a4cbea1b0e1128958259b0fe0c5fd157",
+      "bytes": 804,
+      "kind": "new"
+    },
+    {
+      "path": "MEASUREMENT_CAMPAIGNS_V1.md",
+      "sha256": "08923a721b1d0bc22e16828bd4a8fdc875bf9069d3c9a320ab79d1d03016e391",
+      "bytes": 1279,
+      "kind": "new"
+    },
+    {
+      "path": "tests/measurement-campaign-progress.test.ts",
+      "sha256": "ed10f250673af0bb1fc15beba4a59fafa301a2f4beac02873dc505a89d075d59",
+      "bytes": 1101,
+      "kind": "new"
+    },
+    {
+      "path": "tests/measurement-context.test.ts",
+      "sha256": "4cc52dcb157e6fa956f65da0b5e4d74685eb3cb2d54b8762552deda9aaecf860",
+      "bytes": 352,
+      "kind": "new"
+    },
+    {
+      "path": "tests/body-grammar.test.ts",
+      "sha256": "96e92e1d4380241f106fb5cb176c7b2cc357a875f0dbae8d3db62361b065860b",
+      "bytes": 1059,
+      "kind": "new"
+    },
+    {
+      "path": "supabase/migrations/025_measurement_campaigns_v1.sql",
+      "sha256": "896526e94a555479e868f230dab09665cc9994e75ce545798d6aabed696db194",
+      "bytes": 4137,
+      "kind": "new"
+    },
+    {
+      "path": "src/measurement/context.ts",
+      "sha256": "b869af502fdb51b4e9893a4da6e2d631d692c8ec5f7f84d426205b9a170309d1",
+      "bytes": 452,
+      "kind": "new"
+    },
+    {
+      "path": "src/measurement/progress.ts",
+      "sha256": "a14e1dae2a427dc18d3c9a4a3b658121bdebbcaaaf49733a5034911deb1340d6",
+      "bytes": 1532,
+      "kind": "new"
+    },
+    {
+      "path": "src/measurement/types.ts",
+      "sha256": "6a44512c3fee13538937d6b1e0c05fdfcfe32cb534909828b31825a8fdb2031c",
+      "bytes": 912,
+      "kind": "new"
+    },
+    {
+      "path": "src/repositories/measurement-campaigns.ts",
+      "sha256": "668bf738e8b697e442a562c97d96154967a025c4cdc65b11e8b01d7777e281c7",
+      "bytes": 5560,
+      "kind": "new"
+    },
+    {
+      "path": "src/app/styles.css",
+      "sha256": "55ffa95de57fd8724bb201f3ea9fe2e3308151258f80ae19df920e7e2e66d9f5",
+      "bytes": 41324,
+      "kind": "modified"
+    },
+    {
+      "path": "src/app/App.tsx",
+      "sha256": "84f1d9f68dc2468a71306c392a1654b2a764a8c35ed987a08073abf8fd371878",
+      "bytes": 2477,
+      "kind": "modified"
+    },
+    {
+      "path": "src/screens/Data.tsx",
+      "sha256": "62eb6d8397c527e9a3bffc0cad356bed01a5327a52b43b6890fe8db435a13f8a",
+      "bytes": 13755,
+      "kind": "modified"
+    },
+    {
+      "path": "src/screens/Body.tsx",
+      "sha256": "4e3bba9f37ebf0c38ab2ba2d1fb933ccd5dcf0d591c0399e272aff65444d2288",
+      "bytes": 7462,
+      "kind": "new"
+    },
+    {
+      "path": "src/screens/Trends.tsx",
+      "sha256": "07b8493f8a86053c0f359f6398fb3c211d5ef4e7bcb761b2fdb4902babf4ec55",
+      "bytes": 7104,
+      "kind": "modified"
+    },
+    {
+      "path": "src/components/MeasurementActions.tsx",
+      "sha256": "a5de9741b63775df4209f988208ce4ef1eeb3536c6e18b94691d93331afe917d",
+      "bytes": 4418,
+      "kind": "new"
+    },
+    {
+      "path": "src/components/BodyMap.tsx",
+      "sha256": "467312e99a642c6ad9dd3eaf3bc9fb594a2beec26325443c955692d5ed4ccbce",
+      "bytes": 4116,
+      "kind": "new"
+    },
+    {
+      "path": "src/body/grammar.ts",
+      "sha256": "efe86c95aa96e75d35cce08562057c5a75336935379b18a88f4782a20337c623",
+      "bytes": 2145,
+      "kind": "new"
+    },
+    {
+      "path": "docs/future/INFORMATION_GAIN_ENGINE_V1.md",
+      "sha256": "fedc90431d4c7c8c3db30cd327342734de4a07d23f0090ad4ef5ecbafe5dab4c",
+      "bytes": 4905,
+      "kind": "new"
+    },
+    {
+      "path": "docs/future/CONFOUNDING_MODEL_V1.md",
+      "sha256": "3c7f4707a838a68b0d613be0778ed37c697b4425e5aca6c4c8b694572b01ce30",
+      "bytes": 1016,
+      "kind": "new"
+    },
+    {
+      "path": "docs/future/MATCHED_EVENT_ENGINE_V1.md",
+      "sha256": "a57fca1c9c2ac143dc39a549247991dc9defc13b61a0cfcd30325b45692fc1fc",
+      "bytes": 1134,
+      "kind": "new"
+    },
+    {
+      "path": "docs/future/PROSPECTIVE_VALIDATION_V1.md",
+      "sha256": "7ed8c18f13be81b2109412666a00d60c21766ef5562de09613a5a4eed163e771",
+      "bytes": 1267,
+      "kind": "new"
+    },
+    {
+      "path": "docs/future/PERTURBATION_MODEL_V1.md",
+      "sha256": "2c69a7add832e375c0f7b8192e4d65df2d9d1e56fd8bf635b5c20451d0d174d4",
+      "bytes": 2447,
+      "kind": "new"
+    },
+    {
+      "path": "docs/future/STATUS.md",
+      "sha256": "f7f9e4734ef7b0dcfde5ed567df28887dbfc0191173f0250d20f544148dd6667",
+      "bytes": 606,
+      "kind": "new"
+    },
+    {
+      "path": "docs/future/DYNAMIC_RESPONSE_ENGINE_V1.md",
+      "sha256": "90468de0c264a787739b1a2db722161f7a7185897a05bdee9c0bfb616573b13d",
+      "bytes": 2940,
+      "kind": "new"
+    },
+    {
+      "path": "docs/future/RECOVERY_KINETICS_V1.md",
+      "sha256": "b61010b74537407671e9fc12fd1be39783eceb56b4accb7b0f470ce9c3298334",
+      "bytes": 2998,
+      "kind": "new"
+    },
+    {
+      "path": "docs/future/DYNAMIC_RESPONSE_VALIDATION_PLAN_V1.md",
+      "sha256": "a56c32087e9f5dc9cc9dbb32ee32ed0acfe0f2fd7f717506b9f9edce59e636ec",
+      "bytes": 1917,
+      "kind": "new"
+    },
+    {
+      "path": "docs/future/ADAPTIVE_CAPACITY_V1.md",
+      "sha256": "84555484c7c24c1d5241ce547a7d20fdd6a64710ee256e7373d581e8cf808eb9",
+      "bytes": 2720,
+      "kind": "new"
+    }
+  ],
+  "validation": {
+    "typescript_transpile": "SYNTAX_OK",
+    "relative_import_resolution": "IMPORT_MISSING 0",
+    "full_npm_ci_build": "not executed in this container"
+  }
+}
