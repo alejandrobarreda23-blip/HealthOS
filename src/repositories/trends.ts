@@ -14,6 +14,13 @@ export interface BaselineBandPointV1 {
   sufficient: boolean;
 }
 
+export interface TrendEventV1 {
+  date: string;
+  kind: 'training';
+  count: number;
+  durationMinutes: number;
+}
+
 const FEATURE_FOR_METRIC: Record<string, string> = {
   hrv_rmssd: 'hrv_daily',
   resting_heart_rate: 'resting_hr_daily',
@@ -23,10 +30,10 @@ const FEATURE_FOR_METRIC: Record<string, string> = {
 };
 
 export async function getTrendV1(userId: string, metricKey: string, startDate: string, endDate: string) {
-  if (!supabase) return { points: [], baselines: [] };
+  if (!supabase) return { points: [], baselines: [], events: [] };
   const featureKey = FEATURE_FOR_METRIC[metricKey] ?? metricKey;
 
-  const [features, baselines] = await Promise.all([
+  const [features, baselines, exercise] = await Promise.all([
     supabase
       .from('daily_features')
       .select('physiological_date,value_numeric,coverage_ratio')
@@ -46,10 +53,31 @@ export async function getTrendV1(userId: string, metricKey: string, startDate: s
       .gte('as_of_date', startDate)
       .lte('as_of_date', endDate)
       .order('as_of_date', { ascending: true }),
+    supabase
+      .from('exercise_sessions')
+      .select('physiological_date,started_at,ended_at')
+      .eq('user_id', userId)
+      .gte('physiological_date', startDate)
+      .lte('physiological_date', endDate)
+      .order('physiological_date', { ascending: true }),
   ]);
 
   if (features.error) throw features.error;
   if (baselines.error) throw baselines.error;
+  if (exercise.error) throw exercise.error;
+
+  const byDay = new Map<string, TrendEventV1>();
+  for (const row of exercise.data ?? []) {
+    const date = String((row as any).physiological_date ?? '');
+    if (!date) continue;
+    const start = new Date((row as any).started_at).getTime();
+    const end = new Date((row as any).ended_at).getTime();
+    const minutes = Number.isFinite(start) && Number.isFinite(end) ? Math.max(0, (end - start) / 60000) : 0;
+    const current = byDay.get(date) ?? { date, kind: 'training' as const, count: 0, durationMinutes: 0 };
+    current.count += 1;
+    current.durationMinutes += minutes;
+    byDay.set(date, current);
+  }
 
   return {
     points: (features.data ?? []).filter((r: any) => r.value_numeric !== null).map((r: any) => ({
@@ -64,5 +92,6 @@ export async function getTrendV1(userId: string, metricKey: string, startDate: s
       p75: r.p75 === null ? null : Number(r.p75),
       sufficient: Boolean(r.sufficient),
     })) as BaselineBandPointV1[],
+    events: [...byDay.values()],
   };
 }
