@@ -2,13 +2,14 @@ import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 
 describe('visual product refinement contract', () => {
-  const body = fs.readFileSync('src/components/BodyMap.tsx','utf8');
+  const figure = fs.readFileSync('src/components/body/BodyFigure.tsx','utf8');
   const trends = fs.readFileSync('src/screens/Trends.tsx','utf8');
   const aging = fs.readFileSync('src/screens/Aging.tsx','utf8');
 
-  it('keeps body motion gated by measured recent physiology', () => {
-    expect(body).toContain("canAnimateBodyChannel('measured-flow'");
-    expect(body).toContain('hasRecentPhysiology && !hasSourceDiscontinuity');
+  it('keeps body motion gated by the measured-flow contract', () => {
+    expect(figure).toContain("canAnimateBodyChannel('measured-flow'");
+    expect(figure).toContain('system.canAnimate');
+    expect(figure).toContain('Movimiento habilitado por señal medida');
   });
 
   it('shows baseline only from stored sufficient baselines', () => {
