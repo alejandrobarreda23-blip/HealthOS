@@ -9,11 +9,11 @@ const names = await readdir(dir);
 
 const numbered = names
   .map((name) => {
-    const match = name.match(/^(\d{3})_/);
+    const match = name.match(/^(\d{14}|\d{3})_/);
     return match ? { head: match[1], name } : null;
   })
   .filter(Boolean)
-  .sort((a, b) => a.head.localeCompare(b.head));
+  .sort((a, b) => a.head.length - b.head.length || a.head.localeCompare(b.head));
 
 if (numbered.length === 0) {
   throw new Error("No numbered migrations found");
