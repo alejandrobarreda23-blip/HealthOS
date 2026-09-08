@@ -1,0 +1,81 @@
+{
+  "version": "1.19.0",
+  "name": "Body V4 / Organism Explorer",
+  "files": [
+    {
+      "path": "BODY_V4_ORGANISM_EXPLORER.md",
+      "sha256": "0d1bca7008c8807689c72c8eaeb551830d376529ae96f649b3133e90e98fe32e",
+      "bytes": 1552
+    },
+    {
+      "path": "PATCH_README_V1_19_0.md",
+      "sha256": "3637a48b77adc1e20d29d1beeff3cfe7434d5f508c1704fd85e3c13df17ffe6a",
+      "bytes": 1172
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "aeb10e66f82bf9bde8afbac7b8367adea3eebdfc57984f20747260d255e0e6e9",
+      "bytes": 120662
+    },
+    {
+      "path": "package.json",
+      "sha256": "6b869ccec2d925b103baa755eae54cb093ecfa9c2f4a78e263bef9ffee6af82d",
+      "bytes": 739
+    },
+    {
+      "path": "src/app/App.tsx",
+      "sha256": "cf25bf57d2ce9eabee0d5968d311522fadb114b8c81e35a0871b6b7b2dcb3718",
+      "bytes": 2595
+    },
+    {
+      "path": "src/app/styles.css",
+      "sha256": "e502eb11dc2fb3b47cfbe1c58472390de0100743bfeb16bda22908ab5c145761",
+      "bytes": 87631
+    },
+    {
+      "path": "src/body/system-config.ts",
+      "sha256": "b7ba5d1b56dc62e37a96739aabb852badc2f4b54fd9e86c15b85ec084d043a9d",
+      "bytes": 3365
+    },
+    {
+      "path": "src/components/body/BodyDossier.tsx",
+      "sha256": "ee4677ca8fdd7f69d81ea80a33948a58237c9210a36be76efff0983f0218c37c",
+      "bytes": 6869
+    },
+    {
+      "path": "src/components/body/BodyFigureV4.tsx",
+      "sha256": "2bbfb32c3b033c25059161747191638d8bbd0db4b94269d2c5203024d950280c",
+      "bytes": 9871
+    },
+    {
+      "path": "src/components/body/BodySystemLabel.tsx",
+      "sha256": "5a081facda19b39c24a1700cfd7c05228b8082e80957d9596179a458025a7d56",
+      "bytes": 1463
+    },
+    {
+      "path": "src/components/body/BodyTimeline.tsx",
+      "sha256": "f195f03765f26293d63104c25d026859c12742a6d76ab5461e21ed5efa99964b",
+      "bytes": 4569
+    },
+    {
+      "path": "src/repositories/body-history.ts",
+      "sha256": "3a5b1508270916ca3929cd16dbac5a6af05c4cab0daf2ed49348b9f982d05d43",
+      "bytes": 5448
+    },
+    {
+      "path": "src/screens/Body.tsx",
+      "sha256": "7f8ef412de636d3b730db05d4bd60fd9f35014bee811b0f2e480be7baca4a1f3",
+      "bytes": 15176
+    },
+    {
+      "path": "src/screens/Trends.tsx",
+      "sha256": "4796610307fefb7726f92eaca7795472c4c2ca8b1ee5fed697aa28ad5087ff21",
+      "bytes": 11341
+    },
+    {
+      "path": "tests/body-v4-contract.test.ts",
+      "sha256": "73369f185d72000fdf85a54d9f9afa530ee9641ed2e64af1bd5f74428f74e849",
+      "bytes": 1790
+    }
+  ]
+}
