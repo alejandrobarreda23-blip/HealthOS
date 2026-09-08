@@ -31,7 +31,7 @@ export default function App(){
  const openTrend=(metricKey:string)=>{sessionStorage.setItem('healthos.trends.metric',metricKey);setT('trends')};
  const content=t==='users'&&isAdmin
   ? <AdminUsers onOpen={()=>setT('body')}/>
-  : <><SubjectBanner onUsers={isAdmin?()=>setT('users'):undefined}/>{t==='body'?<Body initialDate={bodyDate} onOpenTrend={openTrend} onOpenActivities={date=>{setActivityDate(date);setT('activities')}}/>:t==='activities'?<Activities initialDate={activityDate} onOpenBody={date=>{setBodyDate(date);setT('body')}}/>:t==='today'?<Today/>:t==='trends'?<Trends/>:t==='health'?<Health/>:t==='aging'?<Aging/>:<Data/>}</>;
+  : <><SubjectBanner onUsers={isAdmin?()=>setT('users'):undefined}/>{t==='body'?<Body initialDate={bodyDate} onOpenTrend={openTrend} onOpenActivities={date=>{setActivityDate(date);setT('activities')}}/>:t==='activities'?<Activities initialDate={activityDate} onOpenBody={date=>{setBodyDate(date);setT('body')}}/>:t==='today'?<Today/>:t==='trends'?<Trends onOpenActivities={date=>{setActivityDate(date);setT('activities')}}/>:t==='health'?<Health/>:t==='aging'?<Aging/>:<Data/>}</>;
 
  return <div className="shell"><AppNav tab={t} setTab={tab=>{setActivityDate('');setBodyDate('');setT(tab)}} isAdmin={isAdmin}/><main><div className="contentFrame">{content}</div></main></div>;
 }
