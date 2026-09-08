@@ -5,6 +5,7 @@ import { durationLabel, nonnegative, numberLabel, sessionSeconds, sportLabel } f
 import { minusDays } from '../health/metrics/daily-series';
 import { trainingTotals } from '../health/activity-context';
 import SportIcon from './SportIcon';
+import { PeriodReading } from './ActivityReading';
 
 export default function ActivityOverview({ sessions, colorMode, activeDay, onDay, onSport }: { sessions: TrainingSession[]; colorMode: ActivityColorMode; activeDay: string; onDay: (date: string) => void; onSport: (sport: string) => void }) {
   const end=[...sessions].sort((a,b)=>b.physiological_date.localeCompare(a.physiological_date))[0]?.physiological_date;
@@ -26,5 +27,6 @@ export default function ActivityOverview({ sessions, colorMode, activeDay, onDay
       return <button key={date} className={activeDay===date?'selected':''} aria-pressed={activeDay===date} aria-label={`${date}: ${rows.length} sesiones registradas`} onClick={()=>onDay(activeDay===date?'':date)} title={`${date} · ${rows.length} sesiones · ${durationLabel(trainingTotals(rows).seconds)}`}><span>{date.slice(8)}</span><div className="activityCalendarBars">{rows.slice(0,5).map(s=><i key={s.id} style={{height:`${Math.max(5,(sessionSeconds(s)??0)/maxSeconds*42)}px`,background:activityColor(s,colorMode).color}}/>)}{rows.length>5 && <b>+{rows.length-5}</b>}{!rows.length && <i className="activityCalendarEmpty"/>}</div></button>;
     })}</div><small className="activityCalendarNote">{withColor}/{recent.length} sesiones con {colorMode==='intensity'?'intensidad':'RPE'}. Gris: dato ausente. Un día vacío no acredita descanso.</small></div>
     <div className="activitySportsMix"><strong>Deportes del periodo</strong>{sports.map(({sport,rows})=><button key={sport} onClick={()=>onSport(sport)}><SportIcon sport={sport} size={19}/><span>{sportLabel(sport)}<i style={{'--sport-width':`${rows.length/recent.length*100}%`} as CSSProperties}/></span><b>{rows.length}</b></button>)}</div></div>
+    <PeriodReading sessions={sessions} end={end}/>
   </section>;
 }
