@@ -4,6 +4,30 @@
 -- Additive foundation only: no beauty score, no facial-age output.
 -- =========================================================
 
+-- Reconcile the multiuser read helper in schema history. It already exists in
+-- production from the multiuser hotfix, but keeping it here makes this migration
+-- reproducible from repository state.
+create or replace function public.can_read_data_user(target_user_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select
+    target_user_id = auth.uid()
+    or exists (
+      select 1
+      from public.subjects s
+      where s.created_by_user_id = target_user_id
+        and s.status = 'active'
+        and public.can_access_subject(s.id)
+    );
+$$;
+
+revoke all on function public.can_read_data_user(uuid) from public;
+grant execute on function public.can_read_data_user(uuid) to authenticated;
+
 create table if not exists public.visible_aging_photo_sessions (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
