@@ -5,6 +5,7 @@ import type { ActivityColorMode } from '../health/activity-presentation';
 import ActivityOverview from './ActivityOverview';
 import ActivitySessionCard from './ActivitySessionCard';
 import { ActivityDetail } from './ActivityDetail';
+import HeartRateSettings from './HeartRateSettings';
 import '../screens/activities.css';
 import './activity-hub.css';
 
@@ -28,6 +29,7 @@ export default function ActivityBrowser({ sessions, userId, initialDate='', load
   useEffect(()=>{setActiveDay('');setSelectedId('');setLimit(24);},[sport,from,to,search]);
   const clear=()=>{setSport('');setFrom('');setTo('');setSearch('');setActiveDay('');setSelectedId('');setLimit(24);};
   return <div className="activitiesScreen activityHub">
+    <HeartRateSettings/>
     <header className="activityHubHeader"><div><div className="eyebrow">HEALTHOS · ENTRENAMIENTO</div><h1>Tu historia en movimiento</h1><p>Explora tus sesiones, reconoce sus diferencias y abre el contexto que las rodea.</p></div><button className="secondary" onClick={refresh} disabled={loading}>Actualizar</button></header>
     <div className="activityHubToolbar"><label className="activitySearch">Buscar entrenamiento<input type="search" placeholder="Nombre, deporte o fecha…" value={search} onChange={e=>setSearch(e.target.value)}/></label><label>Deporte<select value={sport} onChange={e=>setSport(e.target.value)}><option value="">Todos los deportes</option>{sports.map(s=><option key={s} value={s}>{sportLabel(s)}</option>)}</select></label><label>Desde<input type="date" value={from} onChange={e=>setFrom(e.target.value)}/></label><label>Hasta<input type="date" value={to} onChange={e=>setTo(e.target.value)}/></label><button onClick={clear}>Ver todo</button></div>
     <div className="activityColorLegend"><label>Colorear por<select value={colorMode} onChange={e=>setColorMode(e.target.value as ActivityColorMode)}><option value="intensity">Intensidad de origen</option><option value="rpe">Esfuerzo percibido · RPE</option></select></label><div className="activityColorScale"><i/><span>{colorMode==='intensity'?'≤50 %':'1/10'}</span><span>{colorMode==='intensity'?'75 %':'5–6/10'}</span><span>{colorMode==='intensity'?'≥100 %':'10/10'}</span></div><details><summary>Qué significa el color</summary><p>{colorMode==='intensity'?'Se utiliza la intensidad calculada que entrega Intervals.icu (icu_intensity). Verde a 50 % o menos, ocre a 75 % y rojo a 100 % o más; valores intermedios usan un gradiente. El cálculo de origen puede depender del deporte y de los datos disponibles.':'Se utiliza el esfuerzo percibido registrado en Intervals.icu (icu_rpe), de 1 a 10. Es una valoración subjetiva; no se sustituye por la intensidad calculada.'} La escala es visual: no define zonas, seguridad ni calidad del entrenamiento. Gris significa dato ausente. La duración y la FC media no determinan este color.</p><a href="https://forum.intervals.icu/t/api-access-to-intervals-icu/609" target="_blank" rel="noreferrer">Documentación de la fuente</a></details></div>

@@ -11,7 +11,7 @@ export default function AdminUsers({onOpen}:{onOpen:()=>void}){
   <header>
    <div className="eyebrow">HEALTHOS ADMIN</div>
    <h1>Usuarios</h1>
-   <p className="muted">Selecciona un perfil para consultar su HealthOS en modo lectura.</p>
+   <p className="muted">Selecciona un perfil para consultar su HealthOS. Las zonas de FC se configuran en Actividades.</p>
   </header>
 
   <section className="adminStats card">
