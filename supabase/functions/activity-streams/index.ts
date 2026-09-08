@@ -18,10 +18,10 @@ Deno.serve(async(req:Request)=>{
     const service=createClient(url,serviceKey,{auth:{persistSession:false}});
     const {data:subject,error:subjectError}=await service.from('subjects').select('created_by_user_id,status').eq('id',body.subject_id).single();
     if(subjectError||subject?.status!=='active')return response({message:'Perfil no disponible'},403);
-    const {data:session,error:sessionError}=await service.from('exercise_sessions').select('id,source_record_id,external_session_id,provider').eq('user_id',subject.created_by_user_id).eq('id',body.session_id).single();
+    const {data:session,error:sessionError}=await service.from('exercise_sessions').select('id,source_record_id,external_session_id,provider,activity_type').eq('user_id',subject.created_by_user_id).eq('id',body.session_id).single();
     if(sessionError||!session||session.provider!=='intervals_icu'||!session.source_record_id)return response({message:'Actividad no disponible'},404);
-    const {data:cached}=await service.from('activity_streams').select('streams').eq('subject_id',body.subject_id).eq('session_id',session.id).maybeSingle();
-    if(cached)return response({streams:cached.streams});
+    const {data:cached}=await service.from('activity_streams').select('streams,climb_analysis').eq('subject_id',body.subject_id).eq('session_id',session.id).maybeSingle();
+    if(cached&&(!body.climbs||cached.climb_analysis?.version==='climbs_v1'))return response({streams:cached.streams,analysis:cached.climb_analysis});
     const {data:record,error:recordError}=await service.from('source_records').select('payload,external_id').eq('id',session.source_record_id).eq('user_id',subject.created_by_user_id).eq('provider','intervals_icu').eq('record_type','activity').single();
     if(recordError||!record||record.external_id!==session.external_session_id)return response({message:'Vínculo de origen no válido'},409);
     const {data:integration,error:integrationError}=await service.from('subject_integrations').select('credential_secret_id,external_account_id,status').eq('subject_id',body.subject_id).eq('provider','intervals_icu').maybeSingle();
@@ -39,7 +39,7 @@ Deno.serve(async(req:Request)=>{
     }
     if(!key)return response({message:'Configura una conexión de Intervals activa para este perfil.'},409);
     const id=record.external_id;if(typeof id!=='string'||!/^i?\d+$/.test(id))return response({message:'Identificador de actividad no compatible.'},409);
-    const upstream=await fetch(`https://intervals.icu/api/v1/activity/${encodeURIComponent(id)}/streams.json?types=time,heartrate,watts,velocity_smooth`,{headers:{Authorization:`Basic ${btoa(`API_KEY:${key}`)}`,Accept:'application/json'},signal:AbortSignal.timeout(25000)});
+    const upstream=await fetch(`https://intervals.icu/api/v1/activity/${encodeURIComponent(id)}/streams.json?types=time,heartrate,watts,velocity_smooth,altitude,fixed_altitude,distance`,{headers:{Authorization:`Basic ${btoa(`API_KEY:${key}`)}`,Accept:'application/json'},signal:AbortSignal.timeout(25000)});
     if(!upstream.ok)return response({message:upstream.status===404?'La fuente no dispone de series para esta actividad.':upstream.status===429?'La fuente limita las consultas. Inténtalo más tarde.':'La fuente no ha permitido descargar la curva.'},upstream.status===429?429:502);
     // Bound memory before parsing; store only the requested numeric channels, never GPS or credentials.
     const reader=upstream.body?.getReader();if(!reader)return response({message:'Respuesta vacía de origen'},502);
@@ -47,11 +47,18 @@ Deno.serve(async(req:Request)=>{
     const bytes=new Uint8Array(size);let offset=0;for(const c of chunks){bytes.set(c,offset);offset+=c.length;}
     const raw=JSON.parse(new TextDecoder().decode(bytes));
     if(!Array.isArray(raw))return response({message:'Formato de curva no reconocido.'},502);
-    const streams=raw.filter(x=>x&&['time','heartrate','watts','velocity_smooth'].includes(x.type)&&Array.isArray(x.data)).map(x=>({type:x.type,data:x.data.map((v:unknown)=>typeof v==='number'&&Number.isFinite(v)?v:null)}));
+    const streams=raw.filter(x=>x&&['time','heartrate','watts','velocity_smooth','altitude','fixed_altitude','distance'].includes(x.type)&&Array.isArray(x.data)).map(x=>({type:x.type,data:x.data.map((v:unknown)=>typeof v==='number'&&Number.isFinite(v)?v:null)}));
     const time=streams.find(x=>x.type==='time')?.data,hr=streams.find(x=>x.type==='heartrate')?.data;
-    if(!time||!hr||time.length!==hr.length||time.length<2||time.length>200000||time.some((v:number|null,i:number)=>v===null||v<0||v>172800||(i>0&&v<=time[i-1])))return response({message:'No hay una curva de FC con tiempos válidos en esta actividad.'});
-    const {error:saveError}=await service.from('activity_streams').insert({subject_id:body.subject_id,session_id:session.id,source_record_id:session.source_record_id,streams,provider:'intervals_icu'});
+    if(!time||(!body.climbs&&!hr)||(hr&&time.length!==hr.length)||time.length<2||time.length>200000||time.some((v:number|null,i:number)=>v===null||v<0||v>172800||(i>0&&v<=time[i-1])))return response({message:'No hay una curva de FC con tiempos válidos en esta actividad.'});
+    let analysis=null;
+    if(['Ride','MountainBikeRide','GravelRide'].includes(session.activity_type)){
+      const {data:computed,error:analysisError}=await service.rpc('analyze_cycling_stream',{samples:streams});
+      if(analysisError)return response({message:'No se pudo calcular el análisis de subidas.'},503);
+      analysis={...computed,sourceFlagged:record.payload?.icu_ignore_hr===true||record.payload?.ignore_velocity===true||record.payload?.ignore_pace===true};
+    }
+    const {error:saveError}=await service.from('activity_streams').upsert({subject_id:body.subject_id,session_id:session.id,source_record_id:session.source_record_id,streams,provider:'intervals_icu',climb_analysis:analysis,fetched_at:new Date().toISOString()},{onConflict:'subject_id,session_id'});
     if(saveError&&saveError.code!=='23505')return response({message:'La curva se obtuvo, pero no pudo guardarse. Vuelve a intentarlo.'},503);
-    return response({streams});
+    return response({streams,analysis});
   }catch{return response({message:'No se pudo completar la consulta de la curva.'},503);}
 });
+
