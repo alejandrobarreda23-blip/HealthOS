@@ -10,10 +10,11 @@ import { useHealthBriefV1 } from '../hooks/useHealthBrief';
 import { useSubject } from '../subjects/SubjectProvider';
 import { bodySystemConfig } from '../body/system-config';
 import { clampBodyDate, selectBody } from '../body/selectors';
-import { localToday } from '../health/metrics/daily-series';
+import { localToday, minusDays } from '../health/metrics/daily-series';
+import { evaluateMetric } from '../health/metrics/evaluation';
 const SYSTEM_ICONS = { autonomic: Waves, cardio: HeartPulse, sleep: Moon, musculo: Dumbbell, metabolic: CircleGauge, recovery: Activity };
-interface Props { onOpenTrend?: (metricKey: string) => void; }
-export default function Body({ onOpenTrend }: Props) {
+interface Props { onOpenTrend?: (metricKey: string) => void; onOpenActivities?: (date: string) => void; initialDate?: string; }
+export default function Body({ onOpenTrend, onOpenActivities, initialDate }: Props) {
   const { scope } = useSubject();
   const brief = useHealthBriefV1();
   const asOfDate = localToday();
@@ -23,7 +24,14 @@ export default function Body({ onOpenTrend }: Props) {
   const [comparisonDate, setComparisonDate] = useState<string | null>(null);
   const [windowDays, setWindowDays] = useState(365);
   const [mode, setMode] = useState<BodyVisualMode>('state');
-  useEffect(() => { setSelectedDate(asOfDate); setComparisonDate(null); }, [asOfDate, scope?.dataUserId]);
+  useEffect(() => { setSelectedDate(initialDate || asOfDate); setComparisonDate(null); }, [asOfDate, scope?.dataUserId, initialDate]);
+  const latestEvaluable = useMemo(() => {
+    const dates = [...new Set((history.data?.points ?? []).map(p => p.physiologicalDate))].filter(date => date >= minusDays(asOfDate,364)).sort().reverse();
+    return dates.find(date => ['hrv_rmssd','resting_heart_rate','sleep_duration','oxygen_saturation'].some(key => {
+      const status = evaluateMetric(history.data?.points ?? [],key,date).status;
+      return status === 'detected' || status === 'not_detected';
+    })) ?? null;
+  }, [history.data, asOfDate]);
   const model = useMemo(() => selectBody(history.data, selectedDate), [history.data, selectedDate]);
   const { systems, selectedDay } = model;
   const selected = systems.find(s => s.key === selectedSystem)!;
@@ -66,6 +74,12 @@ export default function Body({ onOpenTrend }: Props) {
       {history.error && <div className="bodyV3LoadNotice" role="alert">{history.error}</div>}
       {history.loading && <p role="status">Cargando observaciones y referencias…</p>}
       <p className="bodyAnalysisNote">Lectura descriptiva recalculada hasta {selectedDate}. Último análisis guardado: {brief.data?.date ?? 'sin análisis disponible'}. Los canales disponibles no representan un porcentaje de salud del sistema.</p>
+      <div className="activityFreshness">
+        <span>Hoy: {asOfDate} · último registro: {latestObserved ?? 'sin datos'}. {latestObserved && latestObserved < asOfDate ? 'Los datos anteriores no describen el estado de hoy.' : ''}</span>
+        {latestObserved && <button onClick={() => { setWindowDays(365); setSelectedDate(clampBodyDate(latestObserved,asOfDate,365)); }}>Ir al último dato</button>}
+        {latestEvaluable ? <button onClick={() => { setWindowDays(365); setSelectedDate(clampBodyDate(latestEvaluable,asOfDate,365)); }}>Última ventana evaluable · {latestEvaluable}</button> : <span>Aún no hay una ventana evaluable para las señales diarias.</span>}
+        {onOpenActivities && <button onClick={() => onOpenActivities(selectedDate)}>Ver entrenamientos del {selectedDate}{selectedDay ? ` (${selectedDay.exerciseCount})` : ''}</button>}
+      </div>
 
       <div className="bodyV4TopMetrics">
         <div><span>Fecha explorada</span><strong>{selectedDate}</strong></div>

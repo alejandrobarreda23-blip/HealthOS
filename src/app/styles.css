@@ -1126,3 +1126,5 @@ main{
 @media(max-width:1280px){.bodyV4Workspace>.bodyV4Dossier{order:-1}.bodyV4DossierPanel{max-height:none}.bodyV4Figure{max-height:620px}}
 .bodyCompactSystems{display:none}
 @media(max-width:1280px){.bodyCompactSystems{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}.bodyCompactSystems button{border:1px solid #d9e1d9;border-radius:18px;padding:8px 12px;background:#f9faf6;color:#45604e;cursor:pointer;font-size:12px}.bodyCompactSystems button[aria-pressed=true]{background:#355e4b;color:white}}
+
+@media(max-width:959px){.shell>nav,.shell>nav.adminNav{display:flex;overflow-x:auto;justify-content:flex-start}.shell>nav>button{flex:0 0 72px}}

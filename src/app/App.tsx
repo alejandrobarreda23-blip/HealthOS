@@ -6,6 +6,7 @@ import Health from'../screens/Health';
 import Data from'../screens/Data';
 import Aging from'../screens/Aging';
 import Body from'../screens/Body';
+import Activities from'../screens/Activities';
 import AdminUsers from'../screens/AdminUsers';
 import AuthScreen from'../components/AuthScreen';
 import SubjectBanner from'../components/SubjectBanner';
@@ -13,12 +14,14 @@ import{useAuth}from'../auth/AuthProvider';
 import{useSubject}from'../subjects/SubjectProvider';
 import{isLiveMode}from'../state/runtime';
 
-type Tab='body'|'today'|'trends'|'health'|'aging'|'data'|'users';
+type Tab='body'|'today'|'trends'|'health'|'aging'|'data'|'users'|'activities';
 
 export default function App(){
  const{user,loading:authLoading}=useAuth();
  const{isAdmin,loading:subjectLoading,error:subjectError}=useSubject();
  const[t,setT]=useState<Tab>('body');
+ const[activityDate,setActivityDate]=useState('');
+ const[bodyDate,setBodyDate]=useState('');
  useEffect(()=>{if(!isAdmin&&t==='users')setT('body')},[isAdmin,t]);
  if(authLoading)return <main><p>Cargando…</p></main>;
  if(isLiveMode()&&!user)return <AuthScreen/>;
@@ -28,9 +31,9 @@ export default function App(){
  const openTrend=(metricKey:string)=>{sessionStorage.setItem('healthos.trends.metric',metricKey);setT('trends')};
  const content=t==='users'&&isAdmin
   ? <AdminUsers onOpen={()=>setT('body')}/>
-  : <><SubjectBanner onUsers={isAdmin?()=>setT('users'):undefined}/>{t==='body'?<Body onOpenTrend={openTrend}/>:t==='today'?<Today/>:t==='trends'?<Trends/>:t==='health'?<Health/>:t==='aging'?<Aging/>:<Data/>}</>;
+  : <><SubjectBanner onUsers={isAdmin?()=>setT('users'):undefined}/>{t==='body'?<Body initialDate={bodyDate} onOpenTrend={openTrend} onOpenActivities={date=>{setActivityDate(date);setT('activities')}}/>:t==='activities'?<Activities initialDate={activityDate} onOpenBody={date=>{setBodyDate(date);setT('body')}}/>:t==='today'?<Today/>:t==='trends'?<Trends/>:t==='health'?<Health/>:t==='aging'?<Aging/>:<Data/>}</>;
 
- return <div className="shell"><AppNav tab={t} setTab={setT} isAdmin={isAdmin}/><main><div className="contentFrame">{content}</div></main></div>;
+ return <div className="shell"><AppNav tab={t} setTab={tab=>{setActivityDate('');setBodyDate('');setT(tab)}} isAdmin={isAdmin}/><main><div className="contentFrame">{content}</div></main></div>;
 }
 
 function AppNav({tab,setTab,isAdmin}:{tab:Tab;setTab:(tab:Tab)=>void;isAdmin:boolean}){
@@ -38,6 +41,7 @@ function AppNav({tab,setTab,isAdmin}:{tab:Tab;setTab:(tab:Tab)=>void;isAdmin:boo
   ['body',ScanLine,'Mapa'],
   ['today',HeartPulse,'Hoy'],
   ['trends',ChartNoAxesColumnIncreasing,'Evolución'],
+  ['activities',Activity,'Actividades'],
   ['health',Activity,'Salud'],
   ['aging',Activity,'Aging'],
   ['data',Database,'Datos'],
