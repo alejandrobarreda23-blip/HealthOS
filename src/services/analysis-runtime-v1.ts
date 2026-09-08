@@ -1,16 +1,13 @@
-import { buildDualBaselineV1, medianV1 } from '../health/baselines/engine';
+import { medianV1 } from '../health/baselines/engine';
 import type { BaselineSnapshotV1, DatedValue } from '../health/baselines/types';
 import {
   detectInsufficientRecentDataV1,
   detectRecoveryConcordanceV1,
-  detectSleepDeficitV1,
-  detectSpo2DeviationV1,
-  detectSustainedHrvDropV2,
-  detectSustainedRhrElevationV1,
-  detectWeightTrendV1,
 } from '../health/findings-v1/engine';
 import type { FindingCandidateV1 } from '../health/findings-v1/types';
 import { buildHealthBriefV1, type BriefMetricV1, type HealthBriefV1 } from './health-brief-v1';
+import { canonicalDailySeries, comparableSeries, DAILY_SERIES_VERSION } from '../health/metrics/daily-series';
+import { evaluateMetric } from '../health/metrics/evaluation';
 
 export interface RuntimeObservationV1 {
   metricKey: string;
@@ -19,6 +16,11 @@ export interface RuntimeObservationV1 {
   provider?: string | null;
   sourceDevice?: string | null;
   normalizerVersion?: string | null;
+  unit?: string | null;
+  id?: string;
+  dataLevel?: string | null;
+  startedAt?: string | null;
+  endedAt?: string | null;
 }
 
 export interface RuntimeExerciseV1 {
@@ -88,16 +90,17 @@ export function buildRuntimeAnalysisV1(input: {
   sources?: string[];
   normalizers?: string[];
 }): RuntimeAnalysisV1 {
-  const { asOfDate, observations } = input;
-  const metricRows = Object.fromEntries(CORE.map((key) => [key, rowsFor(observations, key)])) as Record<string, DatedValue[]>;
+  const { asOfDate } = input;
+  const observations = canonicalDailySeries(input.observations).filter(p => p.physiologicalDate <= asOfDate);
+  const metricRows = Object.fromEntries(CORE.map((key) => [key, rowsFor(comparableSeries(observations, key, asOfDate).points, key)])) as Record<string, DatedValue[]>;
 
   const baselines: Record<string, BaselineSnapshotV1> = {};
   for (const key of CORE) {
-    baselines[key] = buildDualBaselineV1(key, minusDays(asOfDate, 7), metricRows[key]).reference;
+    baselines[key] = evaluateMetric(observations, key, asOfDate).baseline;
   }
 
   const coverage: Record<string, { observed: number; expected: number }> = {};
-  for (const key of CORE) coverage[key] = { observed: recent(metricRows[key], asOfDate, 7).length, expected: 7 };
+  for (const key of CORE) coverage[key] = { observed: recent(rowsFor(observations, key), asOfDate, 7).length, expected: 7 };
 
   const recentEventTypes = new Set(
     input.events
@@ -111,12 +114,14 @@ export function buildRuntimeAnalysisV1(input: {
   if (coverageFinding) findings.push(coverageFinding);
 
   // Physiological detectors are allowed to run only when their own coverage and baseline rules are met.
-  const hrv = detectSustainedHrvDropV2(asOfDate, metricRows.hrv_rmssd, confounders);
-  const rhr = detectSustainedRhrElevationV1(asOfDate, metricRows.resting_heart_rate, confounders);
-  const sleep = detectSleepDeficitV1(asOfDate, metricRows.sleep_duration, confounders);
-  const recoveryConcordance = detectRecoveryConcordanceV1(asOfDate, hrv, rhr, confounders);
-  const spo2 = detectSpo2DeviationV1(asOfDate, metricRows.oxygen_saturation, confounders);
-  const weight = detectWeightTrendV1(asOfDate, rowsFor(observations, 'weight'), confounders);
+  const hrv = evaluateMetric(observations, 'hrv_rmssd', asOfDate, confounders).finding;
+  const rhr = evaluateMetric(observations, 'resting_heart_rate', asOfDate, confounders).finding;
+  const sleep = evaluateMetric(observations, 'sleep_duration', asOfDate, confounders).finding;
+  const sharedDays = recent(metricRows.hrv_rmssd, asOfDate, 7).filter(h => metricRows.resting_heart_rate.some(r => r.date === h.date)).length;
+  const recoveryConcordance = sharedDays >= 4 ? detectRecoveryConcordanceV1(asOfDate, hrv, rhr, confounders) : null;
+  if (recoveryConcordance) recoveryConcordance.detectorVersion += `+${DAILY_SERIES_VERSION}`;
+  const spo2 = evaluateMetric(observations, 'oxygen_saturation', asOfDate, confounders).finding;
+  const weight = evaluateMetric(observations, 'weight', asOfDate, confounders).finding;
   if (hrv) findings.push(hrv);
   if (rhr) findings.push(rhr);
   if (recoveryConcordance) findings.push(recoveryConcordance);
@@ -156,7 +161,7 @@ export function buildRuntimeAnalysisV1(input: {
     provenance: {
       sources: input.sources ?? [...new Set(observations.map((o) => o.provider).filter((x): x is string => Boolean(x)))],
       normalizers: input.normalizers ?? [...new Set(observations.map((o) => o.normalizerVersion).filter((x): x is string => Boolean(x)))],
-      dailyFeaturesVersion: 'daily_features_v1',
+      dailyFeaturesVersion: DAILY_SERIES_VERSION,
       baselineVersion: 'baseline_v1',
       findingVersions: [...new Set(findings.map((f) => f.detectorVersion))],
     },

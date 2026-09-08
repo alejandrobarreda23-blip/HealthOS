@@ -1102,3 +1102,27 @@ main{
 @media(max-width:940px){.bodyV4Header{align-items:flex-start;flex-direction:column}.bodyV4Header h1{font-size:48px}.bodyV4HeaderTools{justify-content:flex-start}.bodyV4TopMetrics{grid-template-columns:1fr 1fr}.bodyV4StageInner{grid-template-columns:1fr;min-height:0;padding-top:10px}.bodyV4OrganismCenter{order:-1}.bodyV4LabelRail{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.bodyV4SystemConnector{display:none}.bodyV4SystemLabel{grid-template-columns:28px minmax(0,1fr);padding:8px;border:1px solid #e4e3dc;border-radius:13px;background:rgba(255,255,252,.7)}.bodyV4SystemMeta{display:none}.bodyV4Figure{max-width:470px}.bodyV4FocusHeader{top:0}}
 @media(max-width:650px){.bodyV4Header h1{font-size:42px}.bodyV4ModeSwitch{width:100%}.bodyV4ModeSwitch button{flex:1}.bodyV4TopMetrics{grid-template-columns:1fr 1fr}.bodyV4LabelRail{grid-template-columns:1fr 1fr}.bodyV4TimelineHead{align-items:flex-start;flex-direction:column}.bodyV4TimelineHead>div:first-child{flex-wrap:wrap}.bodyV4TimelineControls{justify-content:flex-start}.bodyV4TimelineLegend{gap:7px;flex-wrap:wrap}.bodyV4FigureReadout{min-width:240px;max-width:92%}.bodyV4DossierHead{grid-template-columns:1fr 70px}}
 @media(prefers-reduced-motion:reduce){.bodyV4Channel.can-animate.evidence-measured path,.bodyV4Channel.can-animate.evidence-measured ellipse,.bodyV4Channel.selected.can-animate.evidence-measured .bodyV4Heart{animation:none}.bodyV4SystemLabel{transition:none}}
+.bodyAnalysisNote,.bodyWindowLabel{font-size:12px;color:#607166;line-height:1.6}
+.bodyAnalysisNote{max-width:960px;margin:8px 0 18px}
+.bodyExplanation{padding:17px 0;border-bottom:1px solid #e1e8e2}
+.bodyExplanation h3{font-size:16px;margin:7px 0;color:#294d3a}
+.bodyExplanation p{font-size:13px;line-height:1.65;margin:8px 0}
+.bodyExplanation small{display:block;color:#66766c;line-height:1.5}
+.bodyEvaluationStatus{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#68786d}
+.status-detected .bodyEvaluationStatus{color:#946514}
+.bodyTextAction{display:block;background:none;border:0;padding:10px 0 0;color:#355e45;text-decoration:underline;font-size:12px;cursor:pointer}
+.bodySignalFacts{display:grid;grid-template-columns:1fr 1fr;gap:16px 12px;margin:16px 0}
+.bodySignalFacts dt,.bodyEvidenceDetails dt{font-size:11px;color:#66766c}
+.bodySignalFacts dd{margin:4px 0 0;font-size:17px;font-weight:600;color:#2e4938}
+.bodySignalSpark{width:100%;height:48px;fill:#547860;margin:5px 0 12px}
+.bodyEvidenceDetails{border-bottom:1px solid #e1e8e2;padding:15px 0;overflow-wrap:anywhere}
+.bodyEvidenceDetails summary{cursor:pointer;font-size:13px;font-weight:600;line-height:1.6}
+.bodyEvidenceDetails dd{font-size:12px;line-height:1.6;margin:4px 0 14px}
+.bodyEvidenceDetails p,.bodyEvidenceDetails small{font-size:12px;line-height:1.6}
+.bodySourceIds{font-size:10px;line-height:1.8;max-height:200px;overflow:auto;padding-left:15px}
+.bodyV4Dossier button:focus-visible,.bodyV4Timeline button:focus-visible{outline:2px solid #547860;outline-offset:3px}
+
+.bodyV4DossierHead{grid-template-columns:1fr}
+@media(max-width:1280px){.bodyV4Workspace>.bodyV4Dossier{order:-1}.bodyV4DossierPanel{max-height:none}.bodyV4Figure{max-height:620px}}
+.bodyCompactSystems{display:none}
+@media(max-width:1280px){.bodyCompactSystems{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}.bodyCompactSystems button{border:1px solid #d9e1d9;border-radius:18px;padding:8px 12px;background:#f9faf6;color:#45604e;cursor:pointer;font-size:12px}.bodyCompactSystems button[aria-pressed=true]{background:#355e4b;color:white}}

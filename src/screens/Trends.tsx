@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Activity, Crosshair, Layers3 } from 'lucide-react';
 import { useSubject } from '../subjects/SubjectProvider';
-import { getTrendV1, type BaselineBandPointV1, type TrendEventV1, type TrendPointV1 } from '../repositories/trends';
+import { selectTrend, type TrendPointV1 } from '../repositories/trends';
+import { useBodyHistory } from '../hooks/useBodyHistory';
+import { localToday } from '../health/metrics/daily-series';
 
 type Metric = { key: string; label: string; unit: string; format?: (value: number) => string };
 const METRICS: Metric[] = [
+  { key: 'weight', label: 'Peso', unit: 'kg' },
   { key: 'hrv_rmssd', label: 'HRV', unit: 'ms' },
   { key: 'resting_heart_rate', label: 'FC reposo', unit: 'bpm' },
   { key: 'sleep_duration', label: 'Sueño', unit: 'min', format: (v) => `${(v / 60).toFixed(1)} h` },
@@ -19,7 +22,7 @@ function median(values:number[]){if(!values.length)return null;const s=[...value
 
 function segments(points: TrendPointV1[]) {
   const out: TrendPointV1[][] = []; let current: TrendPointV1[] = [];
-  for (const point of points) { if (!current.length) { current = [point]; continue; } const prev = current[current.length - 1]; const diff = (new Date(`${point.date}T12:00:00Z`).getTime() - new Date(`${prev.date}T12:00:00Z`).getTime()) / 86400000; if (diff > 1) { out.push(current); current = [point]; } else current.push(point); }
+  for (const point of points) { if (!current.length) { current = [point]; continue; } const prev = current[current.length - 1]; const diff = (new Date(`${point.date}T12:00:00Z`).getTime() - new Date(`${prev.date}T12:00:00Z`).getTime()) / 86400000; if (diff > 1 || point.sourceKey !== prev.sourceKey) { out.push(current); current = [point]; } else current.push(point); }
   if (current.length) out.push(current); return out;
 }
 
@@ -30,24 +33,22 @@ export default function Trends() {
     sessionStorage.removeItem('healthos.trends.metric');
     return METRICS.some((metric) => metric.key === requested) ? requested! : 'hrv_rmssd';
   });
-  const [windowDays, setWindowDays] = useState(365);
-  const [points, setPoints] = useState<TrendPointV1[]>([]);
-  const [baselines, setBaselines] = useState<BaselineBandPointV1[]>([]);
-  const [events, setEvents] = useState<TrendEventV1[]>([]);
+  const [initialNavigation] = useState(() => {
+    const subject = sessionStorage.getItem('healthos.trends.subject');
+    const date = sessionStorage.getItem('healthos.trends.date');
+    const days = Number(sessionStorage.getItem('healthos.trends.window'));
+    ['date', 'window', 'subject'].forEach(key => sessionStorage.removeItem(`healthos.trends.${key}`));
+    return { subject, date, days };
+  });
+  const [requestedEnd, setRequestedEnd] = useState(initialNavigation.date);
+  const endDate = initialNavigation.subject === scope?.dataUserId && requestedEnd && /^\d{4}-\d{2}-\d{2}$/.test(requestedEnd) && requestedEnd <= localToday() ? requestedEnd : localToday();
+  const [windowDays, setWindowDays] = useState([30, 90, 365].includes(initialNavigation.days) ? initialNavigation.days : 365);
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const history = useBodyHistory(endDate, windowDays);
+  const { loading, error } = history;
   const metric = METRICS.find((m) => m.key === metricKey) ?? METRICS[0];
-
-  useEffect(() => {
-    if (!scope?.dataUserId) return;
-    const end = new Date().toISOString().slice(0, 10); const start = minusDays(end, windowDays - 1);
-    setLoading(true); setHoverIndex(null);
-    getTrendV1(scope.dataUserId, metricKey, start, end)
-      .then((result) => { setPoints(result.points); setBaselines(result.baselines); setEvents(result.events); setError(''); })
-      .catch((e: any) => setError(e?.message ?? 'No se pudo cargar la evolución.'))
-      .finally(() => setLoading(false));
-  }, [scope?.dataUserId, metricKey, windowDays]);
+  const { points, baselines, events } = useMemo(() => selectTrend(history.data, metricKey, minusDays(endDate, windowDays - 1), endDate), [history.data, metricKey, endDate, windowDays]);
+  useEffect(() => setHoverIndex(null), [scope?.dataUserId, metricKey, endDate, windowDays]);
 
   const chart = useMemo(() => {
     if (!points.length) return null;
@@ -55,22 +56,26 @@ export default function Trends() {
     const baselineValues = baselines.flatMap((b)=>[b.p25,b.p75,b.median].filter((v):v is number=>v!==null));
     const values = [...points.map((p) => p.value), ...baselineValues];
     const rawMin = Math.min(...values), rawMax = Math.max(...values), rawRange = Math.max(rawMax - rawMin, 1); const min = rawMin - rawRange*.08, max = rawMax + rawRange*.08, range = max-min;
-    const windowStart = new Date(`${minusDays(new Date().toISOString().slice(0,10),windowDays-1)}T12:00:00Z`).getTime();
-    const windowEnd = new Date(`${new Date().toISOString().slice(0,10)}T12:00:00Z`).getTime();
+    const windowStart = new Date(`${minusDays(endDate,windowDays-1)}T12:00:00Z`).getTime();
+    const windowEnd = new Date(`${endDate}T12:00:00Z`).getTime();
     const dateRange = Math.max(windowEnd - windowStart, 86400000);
     const x = (date: string) => padX + ((new Date(`${date}T12:00:00Z`).getTime() - windowStart) / dateRange) * (width - 2 * padX);
     const y = (value: number) => height - padY - ((value - min) / range) * (height - 2 * padY);
     const lineSegments = segments(points).map((s) => ({ points: s.map((p) => `${x(p.date)},${y(p.value)}`).join(' '), count: s.length }));
-    const baselinePoints = baselines.filter(b=>b.sufficient&&b.median!==null).map(b=>({date:b.date,x:x(b.date),median:y(b.median!),p25:b.p25===null?null:y(b.p25),p75:b.p75===null?null:y(b.p75)}));
-    const bandUpper = baselinePoints.filter(p=>p.p75!==null).map(p=>`${p.x},${p.p75}`).join(' '); const bandLower = [...baselinePoints].reverse().filter(p=>p.p25!==null).map(p=>`${p.x},${p.p25}`).join(' ');
+    const baselinePoints = baselines.filter(b=>b.sufficient&&b.median!==null).map(b=>({date:b.date,sourceKey:b.sourceKey,x:x(b.date),median:y(b.median!),p25:b.p25===null?null:y(b.p25),p75:b.p75===null?null:y(b.p75)}));
+    const baselineBands = baselinePoints.slice(1).flatMap((p, i) => {
+      const prev = baselinePoints[i];
+      if (p.sourceKey !== prev.sourceKey || Date.parse(p.date) - Date.parse(prev.date) !== 86400000 || [p.p25,p.p75,prev.p25,prev.p75].some(v => v === null)) return [];
+      return [{ band: `${prev.x},${prev.p25} ${p.x},${p.p25} ${p.x},${p.p75} ${prev.x},${prev.p75}`, line: `${prev.x},${prev.median} ${p.x},${p.median}` }];
+    });
     const last = points[points.length - 1];
-    return { width,height,min,max,x,y,gridY:[.2,.4,.6,.8].map(r=>padY+r*(height-2*padY)),segments:lineSegments,lastPoint:{x:x(last.date),y:y(last.value)},baselinePoints,baselineBand:[bandUpper,bandLower].filter(Boolean).join(' '),eventPoints:events.map(e=>({...e,x:x(e.date)})) };
-  }, [points, baselines, events, windowDays]);
+    return { width,height,min,max,x,y,gridY:[.2,.4,.6,.8].map(r=>padY+r*(height-2*padY)),segments:lineSegments,lastPoint:{x:x(last.date),y:y(last.value)},baselinePoints,baselineBands,eventPoints:events.map(e=>({...e,x:x(e.date)})) };
+  }, [points, baselines, events, windowDays, endDate]);
 
   const latest = points[points.length - 1]?.value ?? null; const latestDate = points[points.length - 1]?.date;
   const personalMedian = median(points.map(p=>p.value));
   const hovered = hoverIndex === null ? null : points[hoverIndex] ?? null;
-  const nearestBaseline = hovered ? [...baselines].reverse().find(b=>b.date<=hovered.date&&b.sufficient&&b.median!==null) ?? null : null;
+  const nearestBaseline = hovered ? baselines.find(b=>b.date===hovered.date&&b.sourceKey===hovered.sourceKey&&b.sufficient&&b.median!==null) ?? null : null;
   const deviation = hovered && nearestBaseline?.median != null ? hovered.value-nearestBaseline.median : null;
 
   return <>
@@ -78,6 +83,7 @@ export default function Trends() {
 
     <div className="trendControls" aria-label="Controles de evolución"><div className="trendMetricChips">{METRICS.map((m) => <button key={m.key} className={metricKey === m.key ? 'selected' : ''} onClick={() => setMetricKey(m.key)}>{m.label}</button>)}</div><div className="trendWindows">{[30, 90, 365].map((days) => <button key={days} className={windowDays === days ? 'selected' : ''} onClick={() => setWindowDays(days)}>{days === 365 ? '1 año' : `${days} d`}</button>)}</div></div>
 
+    <p className="bodyAnalysisNote">Ventana hasta {dateLabel(endDate)}. Misma serie diaria y referencia que Body; los cambios de fuente interrumpen las comparaciones. {endDate !== localToday() && <button onClick={() => setRequestedEnd(null)}>Volver a hoy</button>}</p>
     <div className="trendDesktopGrid trendDesktopGridV2">
       <section className="card trendCard trendCardV2">
         <div className="trendHead"><div><span className="trendMetricLabel">{metric.label}</span><small>{points.length ? `Último dato · ${dateLabel(latestDate)}` : 'Sin datos en esta ventana'}</small></div><div className="trendHeadlineNumbers"><span><small>último</small><strong className="trendLatest">{format(metric, latest)}</strong></span><span><small>mediana ventana</small><strong>{format(metric, personalMedian)}</strong></span></div></div>
@@ -88,8 +94,7 @@ export default function Trends() {
           <div className="chartFrame chartFrameV2">
             <svg className="realChart realChartV2" viewBox={`0 0 ${chart.width} ${chart.height}`} aria-label={`Evolución de ${metric.label}`} onMouseLeave={()=>setHoverIndex(null)}>
               {chart.gridY.map((y, i) => <line key={`g-${i}`} className="chartGridLine" x1="0" x2={chart.width} y1={y} y2={y} />)}
-              {chart.baselineBand && <polygon className="chartBaselineBand" points={chart.baselineBand}/>} 
-              {chart.baselinePoints.length>1 && <polyline className="chartBaselineMedian" points={chart.baselinePoints.map(p=>`${p.x},${p.median}`).join(' ')} fill="none"/>}
+              {chart.baselineBands.map((b,i) => <g key={`baseline-${i}`}><polygon className="chartBaselineBand" points={b.band}/><polyline className="chartBaselineMedian" points={b.line} fill="none"/></g>)}
               {chart.eventPoints.map((event)=><g className="trendEventMarker" key={event.date}><line x1={event.x} x2={event.x} y1={chart.height-26} y2={chart.height-14}/><circle cx={event.x} cy={chart.height-12} r={event.count>1?3.5:2.5}/></g>)}
               {chart.segments.map((segment, i) => segment.count > 1 ? <polyline className="chartSeries" key={i} points={segment.points} fill="none" stroke="currentColor" strokeWidth="2" vectorEffect="non-scaling-stroke" /> : <circle className="chartSinglePoint" key={i} cx={Number(segment.points.split(',')[0])} cy={Number(segment.points.split(',')[1])} r="2.8" />)}
               {points.map((p,i)=><circle key={`hit-${p.date}`} className="chartHitPoint" cx={chart.x(p.date)} cy={chart.y(p.value)} r="9" onMouseEnter={()=>setHoverIndex(i)}/>)}
@@ -98,7 +103,7 @@ export default function Trends() {
             </svg>
             {hovered && <div className="trendTooltip"><small>{dateLabel(hovered.date)}</small><strong>{format(metric,hovered.value)}</strong>{nearestBaseline?.median!=null&&<span>Referencia {format(metric,nearestBaseline.median)}</span>}{deviation!==null&&<span>Desviación {deviation>0?'+':''}{format(metric,deviation)}</span>}</div>}
           </div>
-          <div className="trendRange"><span>Mín.<b>{format(metric, Math.min(...points.map(p=>p.value)))}</b></span><span className="trendCoverage"><b>{points.length}</b>días medidos</span><span className="trendMax">Máx.<b>{format(metric, Math.max(...points.map(p=>p.value)))}</b></span></div>
+          <div className="trendRange"><span>Mín.<b>{format(metric, Math.min(...points.map(p=>p.value)))}</b></span><span className="trendCoverage"><b>{points.length}</b>días observados</span><span className="trendMax">Máx.<b>{format(metric, Math.max(...points.map(p=>p.value)))}</b></span></div>
           <div className="trendLegend"><span><i className="legendObserved"/>Observado</span><span><i className="legendBaseline"/>Referencia personal</span><span><i className="legendEvent"/>Entrenamiento</span></div>
         </>}
       </section>

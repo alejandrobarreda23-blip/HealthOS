@@ -39,7 +39,7 @@ export default function BodyTimeline({ history, selectedDate, comparisonDate, on
           {[30, 90, 365].map((days) => <button key={days} className={windowDays === days ? 'active' : ''} onClick={() => onWindowChange(days)}>{days === 365 ? '1 año' : `${days} d`}</button>)}
           <span className="bodyV4TimelineDivider" />
           {selectedDate !== asOfDate && <button className="compare" onClick={() => onPinComparison(comparisonDate === selectedDate ? null : selectedDate)}>{comparisonDate === selectedDate ? 'Quitar comparación' : 'Fijar comparación'}</button>}
-          {latestDate && latestDate !== asOfDate && <button onClick={() => onChange(latestDate)}>Último dato</button>}
+          {latestDate && latestDate !== asOfDate && <button onClick={() => { if (latestDate < visibleStart) onWindowChange(365); onChange(latestDate < minusDays(asOfDate, 364) ? minusDays(asOfDate, 364) : latestDate); }}>Último dato</button>}
           <button className={selectedDate === asOfDate ? 'active' : ''} onClick={() => onChange(asOfDate)}>Hoy</button>
         </div>
       </div>

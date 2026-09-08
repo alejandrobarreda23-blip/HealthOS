@@ -22,7 +22,8 @@ const app = fs.readFileSync('src/app/App.tsx', 'utf8');
   it('makes time exploration and comparison first-class', () => {
     expect(timeline).toContain('Fijar comparación');
     expect(timeline).toContain('comparisonDate');
-    expect(body).toContain('comparisonDay');
+    expect(body).toContain('comparisonDate={comparisonDate}');
+    expect(dossier).toContain('compareBodyMetric');
   });
 
   it('makes the system dossier functional rather than decorative', () => {

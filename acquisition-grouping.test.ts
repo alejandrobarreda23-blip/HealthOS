@@ -1,6 +1,6 @@
 import{describe,it,expect}from'vitest';
-import{groupAcquisitionOpportunities}from'../src/acquisition/grouping';
-import type{AcquisitionOpportunity}from'../src/acquisition/types';
+import{groupAcquisitionOpportunities}from'./src/acquisition/grouping';
+import type{AcquisitionOpportunity}from'./src/acquisition/types';
 
 function gap(metricKey:string,displayName:string,groupKey:string,groupLabel:string,actionability:AcquisitionOpportunity['actionability'],tier:1|2|3,priority=.8):AcquisitionOpportunity{
  return{metricKey,displayName,domain:'test',status:'missing',action:'consider_measurement',priority,priorityTier:tier,reason:'missing',measurementMode:actionability==='protocol_ready'?'episodic_protocol':'home_periodic',longitudinalRoles:['trajectory'],boundary:'test',groupKey,groupLabel,actionability,acquisitionRationale:'adds independent information',coverage:{metricKey,status:'missing',observationCount:0,distinctDays:0,recentDistinctDays:0,daysSinceLastObservation:null,densityRatio:null,minimumDistinctDays:null,targetDistinctDays:null,windowDays:null}};
