@@ -25,7 +25,11 @@ function segments(points: TrendPointV1[]) {
 
 export default function Trends() {
   const { scope } = useSubject();
-  const [metricKey, setMetricKey] = useState('hrv_rmssd');
+  const [metricKey, setMetricKey] = useState(() => {
+    const requested = sessionStorage.getItem('healthos.trends.metric');
+    sessionStorage.removeItem('healthos.trends.metric');
+    return METRICS.some((metric) => metric.key === requested) ? requested! : 'hrv_rmssd';
+  });
   const [windowDays, setWindowDays] = useState(365);
   const [points, setPoints] = useState<TrendPointV1[]>([]);
   const [baselines, setBaselines] = useState<BaselineBandPointV1[]>([]);
