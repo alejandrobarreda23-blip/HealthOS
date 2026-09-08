@@ -25,9 +25,10 @@ export default function App(){
  if(user&&subjectLoading)return <main><p>Cargando perfil…</p></main>;
  if(user&&subjectError)return <main><div className="syncError">No se pudo iniciar el contexto multiusuario: {subjectError}</div></main>;
 
+ const openTrend=(metricKey:string)=>{sessionStorage.setItem('healthos.trends.metric',metricKey);setT('trends')};
  const content=t==='users'&&isAdmin
   ? <AdminUsers onOpen={()=>setT('body')}/>
-  : (()=>{const C={body:Body,today:Today,trends:Trends,health:Health,aging:Aging,data:Data}[t as Exclude<Tab,'users'>]??Body;return <><SubjectBanner onUsers={isAdmin?()=>setT('users'):undefined}/><C/></>})();
+  : <><SubjectBanner onUsers={isAdmin?()=>setT('users'):undefined}/>{t==='body'?<Body onOpenTrend={openTrend}/>:t==='today'?<Today/>:t==='trends'?<Trends/>:t==='health'?<Health/>:t==='aging'?<Aging/>:<Data/>}</>;
 
  return <div className="shell"><AppNav tab={t} setTab={setT} isAdmin={isAdmin}/><main><div className="contentFrame">{content}</div></main></div>;
 }
