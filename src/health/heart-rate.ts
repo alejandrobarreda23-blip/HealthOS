@@ -55,7 +55,7 @@ export function analyzeHeartRate(stream:HrStream,zones:HrZones|null,from=0,to=In
   return {observed,span,coverage:span?observed/span:0,mean:observed?sum/observed:null,peak,times,bins};
 }
 export function hrPeers(session:TrainingSession,sessions:TrainingSession[],sources:Map<string,Record<string,unknown>>,mode:'power'|'speed'){
-  const current=sources.get(session.id);const value=(p:Record<string,unknown>|undefined)=>p?.icu_ignore_hr===true?null:mode==='power'?(p?.device_watts===true&&p.icu_ignore_power!==true?hrNumber(p.icu_average_watts,1,3000):null):(p?.ignore_pace===true?null:hrNumber(p?.average_speed,.1,60));
+  const current=sources.get(session.id);const value=(p:Record<string,unknown>|undefined)=>p?.icu_ignore_hr===true?null:mode==='power'?(p?.device_watts===true&&p.icu_ignore_power!==true?hrNumber(p.icu_average_watts,1,3000):null):(p?.ignore_pace===true||p?.ignore_velocity===true?null:hrNumber(p?.average_speed,.1,60));
   const target=value(current),duration=sessionSeconds(session);if(target===null||duration===null)return [];
   return sessions.filter(s=>s.id!==session.id&&s.activity_type===session.activity_type&&s.provider===session.provider&&s.physiological_date<session.physiological_date&&s.physiological_date>=minusDays(session.physiological_date,180)).flatMap(s=>{
     const source=sources.get(s.id),v=value(source),d=sessionSeconds(s),hr=hrNumber(s.avg_heart_rate_bpm,25,250);

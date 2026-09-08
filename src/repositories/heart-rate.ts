@@ -12,8 +12,8 @@ export async function saveHrSettings(input:HrSettings){
 export async function getHrSources(userId:string){
   if(!supabase)return new Map<string,Record<string,unknown>>();
   const client=supabase;
-  const rows=await readAllPages((from,to)=>client.from('source_records').select('id,external_id,payload:payload->icu_average_watts,device_watts:payload->device_watts,average_speed:payload->average_speed,device_name:payload->>device_name,ignore_power:payload->icu_ignore_power,ignore_hr:payload->icu_ignore_hr,ignore_pace:payload->ignore_pace').eq('user_id',userId).eq('provider','intervals_icu').eq('record_type','activity').order('id').range(from,to));
-  return new Map(rows.map((r:any)=>[r.id,{external_id:r.external_id,icu_average_watts:r.payload,device_watts:r.device_watts,average_speed:r.average_speed,device_name:r.device_name,icu_ignore_power:r.ignore_power,icu_ignore_hr:r.ignore_hr,ignore_pace:r.ignore_pace}]));
+  const rows=await readAllPages((from,to)=>client.from('source_records').select('id,external_id,payload:payload->icu_average_watts,device_watts:payload->device_watts,average_speed:payload->average_speed,device_name:payload->>device_name,ignore_power:payload->icu_ignore_power,ignore_hr:payload->icu_ignore_hr,ignore_pace:payload->ignore_pace,ignore_velocity:payload->ignore_velocity,moving_time:payload->moving_time,elapsed_time:payload->elapsed_time,average_temp:payload->average_temp,route_id:payload->route_id').eq('user_id',userId).eq('provider','intervals_icu').eq('record_type','activity').order('id').range(from,to));
+  return new Map(rows.map((r:any)=>[r.id,{external_id:r.external_id,icu_average_watts:r.payload,device_watts:r.device_watts,average_speed:r.average_speed,device_name:r.device_name,icu_ignore_power:r.ignore_power,icu_ignore_hr:r.ignore_hr,ignore_pace:r.ignore_pace,ignore_velocity:r.ignore_velocity,moving_time:r.moving_time,elapsed_time:r.elapsed_time,average_temp:r.average_temp,route_id:r.route_id}]));
 }
 export async function getHrStream(subjectId:string,sessionId:string):Promise<HrStream|null>{
   if(!supabase)return null;
