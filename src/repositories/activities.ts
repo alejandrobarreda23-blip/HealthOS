@@ -1,11 +1,21 @@
 import { supabase } from '../lib/supabase';
 import { readAllPages } from './pagination';
+import type { ActivitySummary, SummaryRecord } from '../health/activity-presentation';
 
 export interface TrainingSession {
   id: string; physiological_date: string; activity_type: string; started_at: string; ended_at: string;
   provider: string; source_device: string | null; source_record_id: string | null; external_session_id: string | null;
   distance_m: number | null; elevation_gain_m: number | null; active_energy_kcal: number | null;
   avg_heart_rate_bpm: number | null; max_heart_rate_bpm: number | null;
+  summary?: ActivitySummary;
+}
+export async function getActivitySummaries(userId: string): Promise<SummaryRecord[]> {
+  if (!supabase) return [];
+  const client = supabase;
+  return await readAllPages((from,to) => client.from('source_records')
+    .select('id,provider,external_id,name:payload->>name,intensity:payload->icu_intensity,rpe:payload->icu_rpe,route_id:payload->route_id')
+    .eq('user_id',userId).eq('record_type','activity').eq('provider','intervals_icu')
+    .order('id').range(from,to)) as unknown as SummaryRecord[];
 }
 export async function getActivities(userId: string): Promise<TrainingSession[]> {
   if (!supabase) return [];
