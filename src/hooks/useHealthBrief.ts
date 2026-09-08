@@ -1,33 +1,21 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSubject } from '../subjects/SubjectProvider';
 import { getLatestHealthBriefV1 } from '../repositories/health-brief';
 import type { HealthBriefV1 } from '../services/health-brief-v1';
 
 export function useHealthBriefV1() {
   const { scope } = useSubject();
-  const [data, setData] = useState<HealthBriefV1 | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  const refresh = useCallback(async () => {
-    if (!scope?.dataUserId) {
-      setData(null);
-      return;
-    }
-    setLoading(true);
-    try {
-      setData(await getLatestHealthBriefV1(scope.dataUserId));
-      setError('');
-    } catch (e: any) {
-      setError(e?.message ?? 'No se pudo cargar Health Brief.');
-    } finally {
-      setLoading(false);
-    }
-  }, [scope?.dataUserId]);
-
+  const userId = scope?.dataUserId;
+  const [revision, setRevision] = useState(0);
+  const [state, setState] = useState<{ userId: string | undefined; data: HealthBriefV1 | null; error: string; loading: boolean }>({ userId: undefined, data: null, error: '', loading: false });
   useEffect(() => {
-    void refresh();
-  }, [refresh]);
-
-  return { data, loading, error, refresh };
+    let active = true;
+    setState({ userId, data: null, error: '', loading: Boolean(userId) });
+    if (userId) getLatestHealthBriefV1(userId)
+      .then(data => { if (active) setState({ userId, data, error: '', loading: false }); })
+      .catch(error => { if (active) setState({ userId, data: null, error: error.message ?? 'No se pudo cargar el análisis guardado.', loading: false }); });
+    return () => { active = false; };
+  }, [userId, revision]);
+  return { data: state.userId === userId ? state.data : null, error: state.userId === userId ? state.error : '',
+    loading: state.userId === userId ? state.loading : Boolean(userId), refresh: () => setRevision(r => r + 1) };
 }

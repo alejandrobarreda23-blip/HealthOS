@@ -32,7 +32,11 @@ export function buildBaselineSnapshotV1(metricKey:string, asOfDate:string, input
   const minSamples=override?.minSamples??def?.baseline.minSamples??20;
   const minCoverage=override?.minCoverage??def?.baseline.minCoverage??.5;
   const start=minusDays(asOfDate,windowDays-1);
-  const rows=input.filter(r=>r.date>=start&&r.date<=asOfDate&&Number.isFinite(r.value));
+  const byDay = new Map<string, DatedValue[]>();
+  for (const row of input.filter(r=>r.date>=start&&r.date<=asOfDate&&Number.isFinite(r.value))) {
+    byDay.set(row.date, [...(byDay.get(row.date) ?? []), row]);
+  }
+  const rows = [...byDay.values()].map(day => ({ ...day[0], value: medianV1([...new Set(day.map(r => r.value))])! }));
   const values=rows.map(r=>r.value);
   const expectedDays=daysBetweenInclusive(start,asOfDate);
   const coverage=Math.min(1,values.length/expectedDays);

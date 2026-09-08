@@ -1,3 +1,5 @@
+import { readAllPages } from './pagination';
+import { canonicalDailySeries, DAILY_SERIES_VERSION } from '../health/metrics/daily-series';
 import { supabase } from '../lib/supabase';
 import { summarizeEvidenceStrength } from '../services/health-brief-v1';
 import { detectSourceTransitionsV1, inferUnknownGapsV1 } from '../health/missingness-v1';
@@ -16,60 +18,41 @@ export async function refreshAnalysisRuntimeV1(userId: string, asOfDate: string)
   if (!userId) throw new Error('Usuario autenticado requerido.');
 
   const historyStart = minusDays(asOfDate, 120);
-  const [obsResult, exerciseResult, eventResult] = await Promise.all([
-    supabase
-      .from('observations')
-      .select('metric_key,physiological_date,value_numeric,provider,source_device,normalizer_version')
-      .eq('user_id', userId)
-      .in('metric_key', RUNTIME_METRICS)
-      .gte('physiological_date', historyStart)
-      .lte('physiological_date', asOfDate)
-      .not('value_numeric', 'is', null)
-      .order('physiological_date', { ascending: true }),
-    supabase
-      .from('exercise_sessions')
-      .select('physiological_date,started_at,ended_at,distance_m,elevation_gain_m')
-      .eq('user_id', userId)
-      .gte('physiological_date', historyStart)
-      .lte('physiological_date', asOfDate),
-    supabase
-      .from('events')
-      .select('physiological_date,event_type')
-      .eq('user_id', userId)
-      .gte('physiological_date', minusDays(asOfDate, 28))
-      .lte('physiological_date', asOfDate),
+  const client = supabase;
+  const [obsData, exerciseData, eventData] = await Promise.all([
+    readAllPages((from, to) => client.from('observations')
+      .select('id,metric_key,physiological_date,value_numeric,unit,data_level,provider,source_device,normalizer_version,started_at,ended_at')
+      .eq('user_id', userId).in('metric_key', RUNTIME_METRICS)
+      .gte('physiological_date', historyStart).lte('physiological_date', asOfDate)
+      .not('value_numeric', 'is', null).order('physiological_date').order('id').range(from, to)),
+    readAllPages((from, to) => client.from('exercise_sessions')
+      .select('id,physiological_date,started_at,ended_at,distance_m,elevation_gain_m')
+      .eq('user_id', userId).gte('physiological_date', historyStart).lte('physiological_date', asOfDate)
+      .order('physiological_date').order('id').range(from, to)),
+    readAllPages((from, to) => client.from('events').select('id,physiological_date,event_type')
+      .eq('user_id', userId).gte('physiological_date', minusDays(asOfDate, 28)).lte('physiological_date', asOfDate)
+      .order('physiological_date').order('id').range(from, to)),
   ]);
-
-  if (obsResult.error) throw obsResult.error;
-  if (exerciseResult.error) throw exerciseResult.error;
-  if (eventResult.error) throw eventResult.error;
-
-  const observations: RuntimeObservationV1[] = (obsResult.data ?? []).map((row: any) => ({
-    metricKey: row.metric_key,
-    physiologicalDate: row.physiological_date,
-    value: Number(row.value_numeric),
-    provider: row.provider,
-    sourceDevice: row.source_device,
-    normalizerVersion: row.normalizer_version,
+  const observations = obsData.filter(row => row.value_numeric !== null).map(row => ({
+    id: row.id, metricKey: row.metric_key, physiologicalDate: row.physiological_date,
+    value: Number(row.value_numeric), startedAt: row.started_at, endedAt: row.ended_at, unit: row.unit, dataLevel: row.data_level,
+    provider: row.provider, sourceDevice: row.source_device, normalizerVersion: row.normalizer_version,
   }));
-
-  const exercises: RuntimeExerciseV1[] = (exerciseResult.data ?? []).map((row: any) => ({
+  const exercises: RuntimeExerciseV1[] = exerciseData.map(row => ({
     physiologicalDate: row.physiological_date,
-    durationMinutes: Math.max(0, (new Date(row.ended_at).getTime() - new Date(row.started_at).getTime()) / 60000),
-    distanceKm: Number(row.distance_m ?? 0) / 1000,
-    elevationGainM: Number(row.elevation_gain_m ?? 0),
+    durationMinutes: Number.isFinite(Date.parse(row.ended_at) - Date.parse(row.started_at)) ? Math.max(0, (Date.parse(row.ended_at) - Date.parse(row.started_at)) / 60000) : 0,
+    distanceKm: Number(row.distance_m ?? 0) / 1000, elevationGainM: Number(row.elevation_gain_m ?? 0),
   }));
-
   const analysis = buildRuntimeAnalysisV1({
     asOfDate,
     observations,
     exercises,
-    events: (eventResult.data ?? []).map((row: any) => ({ physiologicalDate: row.physiological_date, eventType: row.event_type })),
+    events: eventData.map((row: any) => ({ physiologicalDate: row.physiological_date, eventType: row.event_type })),
   });
 
   // Data-quality layer: preserve missingness as UNKNOWN unless explicit evidence identifies the cause.
   const recentStart = minusDays(asOfDate, 6);
-  const corePresence = observations
+  const corePresence = canonicalDailySeries(observations)
     .filter((o) => ['hrv_rmssd','resting_heart_rate','sleep_duration','oxygen_saturation','steps'].includes(o.metricKey) && o.physiologicalDate >= recentStart)
     .map((o) => ({ date: o.physiologicalDate, metricKey: o.metricKey, provider: o.provider }));
   const gaps = inferUnknownGapsV1(recentStart, asOfDate, ['hrv_rmssd','resting_heart_rate','sleep_duration','oxygen_saturation','steps'], corePresence);
@@ -81,7 +64,7 @@ export async function refreshAnalysisRuntimeV1(userId: string, asOfDate: string)
     if (missingWrite.error) throw missingWrite.error;
   }
 
-  const transitions = detectSourceTransitionsV1(observations.map((o) => ({
+  const transitions = detectSourceTransitionsV1(canonicalDailySeries(observations).map((o) => ({
     date: o.physiologicalDate, metricKey: o.metricKey, provider: o.provider ?? 'unknown', sourceDevice: o.sourceDevice, normalizerVersion: o.normalizerVersion,
   })));
   if (transitions.length) {
@@ -113,7 +96,7 @@ export async function refreshAnalysisRuntimeV1(userId: string, asOfDate: string)
     sufficient: b.sufficient,
     excluded_sample_count: 0,
     exclusion_reasons: {},
-    algorithm_version: 'baseline_v1',
+    algorithm_version: `baseline_v1+${DAILY_SERIES_VERSION}`,
   }));
 
   const baselineWrite = await supabase
@@ -124,7 +107,7 @@ export async function refreshAnalysisRuntimeV1(userId: string, asOfDate: string)
   // Generated findings are snapshots: older active windows become resolved when a new analysis is produced.
   const generatedVersions = ['sustained_hrv_drop_v2','sustained_rhr_elevation_v1','recovery_concordance_v1','sleep_deficit_v1','spo2_deviation_v1','weight_trend_v1','insufficient_recent_data_v1'];
   const resolveOld = await supabase.from('findings').update({ status: 'resolved' })
-    .eq('user_id', userId).eq('status', 'active').in('detector_version', generatedVersions).lt('period_end', asOfDate);
+    .eq('user_id', userId).eq('status', 'active').in('detector_version', [...generatedVersions, ...generatedVersions.map(v => `${v}+${DAILY_SERIES_VERSION}`)]).lt('period_end', asOfDate);
   if (resolveOld.error) throw resolveOld.error;
 
   for (const finding of analysis.findings) {

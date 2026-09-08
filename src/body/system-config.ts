@@ -22,7 +22,7 @@ export const BODY_SYSTEM_CONFIG: Record<BodySystemKey, BodySystemConfig> = {
     key: 'autonomic',
     label: 'Autonómico',
     shortLabel: 'Autonómico',
-    description: 'Regulación autonómica y balance de recuperación observables en HRV y frecuencia cardiaca en reposo.',
+    description: 'HRV y frecuencia cardiaca de reposo respecto a su historia personal. Estas señales no describen por sí solas toda la regulación autonómica.',
     primaryTrendMetric: 'hrv_rmssd',
     metrics: [
       { key: 'hrv_rmssd', label: 'HRV', unit: 'ms', trendKey: 'hrv_rmssd', direction: 'context' },
@@ -44,7 +44,7 @@ export const BODY_SYSTEM_CONFIG: Record<BodySystemKey, BodySystemConfig> = {
     key: 'sleep',
     label: 'Sueño',
     shortLabel: 'Sueño',
-    description: 'Duración y continuidad del sueño observadas como parte de la historia fisiológica.',
+    description: 'Duración del sueño y su variación entre días. La duración aislada no describe continuidad ni arquitectura del sueño.',
     primaryTrendMetric: 'sleep_duration',
     metrics: [
       { key: 'sleep_duration', label: 'Sueño', unit: 'min', trendKey: 'sleep_duration', direction: 'context' },
@@ -65,9 +65,10 @@ export const BODY_SYSTEM_CONFIG: Record<BodySystemKey, BodySystemConfig> = {
     key: 'metabolic',
     label: 'Metabólico',
     shortLabel: 'Metabólico',
+    primaryTrendMetric: 'weight',
     description: 'Composición y metabolismo requieren medidas específicas; peso aislado no caracteriza el sistema.',
     metrics: [
-      { key: 'weight', label: 'Peso', unit: 'kg', direction: 'context' },
+      { key: 'weight', label: 'Peso', unit: 'kg', trendKey: 'weight', direction: 'context' },
     ],
   },
   recovery: {

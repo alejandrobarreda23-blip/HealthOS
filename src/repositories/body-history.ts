@@ -1,157 +1,52 @@
 import { supabase } from '../lib/supabase';
-import {
-  BODY_CORE_METRICS,
-  mergeEvidenceKinds,
-  normalizeEvidenceKind,
-  type BodyEvidenceKind,
-  type BodyHistoryDay,
-  type BodyHistorySnapshot,
-  type BodyMetricValue,
-} from '../body/view-state';
+import { canonicalDailySeries, type DailyInput } from '../health/metrics/daily-series';
+import { readAllPages } from './pagination';
+import { BODY_CORE_METRICS, normalizeEvidenceKind, type BodyHistoryDay, type BodyHistorySnapshot } from '../body/view-state';
 
-const BODY_METRICS = [...BODY_CORE_METRICS, 'weight'];
-
-function median(values: number[]) {
-  if (!values.length) return null;
-  const sorted = [...values].sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
-}
-
-function asDate(value: unknown) {
-  const text = typeof value === 'string' ? value : '';
-  return /^\d{4}-\d{2}-\d{2}$/.test(text) ? text : null;
-}
-
-function minutesBetween(startedAt: unknown, endedAt: unknown) {
-  const start = typeof startedAt === 'string' ? new Date(startedAt).getTime() : NaN;
-  const end = typeof endedAt === 'string' ? new Date(endedAt).getTime() : NaN;
-  if (!Number.isFinite(start) || !Number.isFinite(end)) return 0;
-  return Math.max(0, (end - start) / 60000);
-}
-
-export async function getBodyHistory(
-  userId: string,
-  startDate: string,
-  endDate: string,
-): Promise<BodyHistorySnapshot> {
-  if (!supabase) return { startDate, endDate, latestObservedDate: null, days: [] };
-
+export async function getBodyHistory(userId: string, startDate: string, endDate: string): Promise<BodyHistorySnapshot> {
+  const client = supabase;
+  if (!client) return { startDate, endDate, latestObservedDate: null, days: [], points: [] };
   const [observations, exercise] = await Promise.all([
-    supabase
-      .from('observations')
-      .select('physiological_date,metric_key,value_numeric,unit,data_level,provider')
-      .eq('user_id', userId)
-      .in('metric_key', BODY_METRICS)
-      .gte('physiological_date', startDate)
-      .lte('physiological_date', endDate)
-      .order('physiological_date', { ascending: true }),
-    supabase
-      .from('exercise_sessions')
-      .select('physiological_date,started_at,ended_at,elevation_gain_m,data_level')
-      .eq('user_id', userId)
-      .gte('physiological_date', startDate)
-      .lte('physiological_date', endDate)
-      .order('physiological_date', { ascending: true }),
+    readAllPages((from, to) => client.from('observations')
+      .select('id,physiological_date,metric_key,value_numeric,unit,data_level,provider,source_device,normalizer_version,started_at,ended_at')
+      .eq('user_id', userId).in('metric_key', [...BODY_CORE_METRICS, 'weight'])
+      .gte('physiological_date', startDate).lte('physiological_date', endDate)
+      .order('physiological_date').order('id').range(from, to)),
+    readAllPages((from, to) => client.from('exercise_sessions')
+      .select('id,physiological_date,started_at,ended_at,elevation_gain_m,data_level')
+      .eq('user_id', userId).gte('physiological_date', startDate).lte('physiological_date', endDate)
+      .order('physiological_date').order('id').range(from, to)),
   ]);
-
-  if (observations.error) throw observations.error;
-  if (exercise.error) throw exercise.error;
-
-  const dayMap = new Map<string, {
-    values: Map<string, { values: number[]; unit: string | null; evidence: BodyEvidenceKind[]; providers: string[] }>;
-    exerciseCount: number;
-    exerciseMinutes: number;
-    exerciseElevationM: number;
-    exerciseEvidence: BodyEvidenceKind[];
-  }>();
-
-  function ensure(date: string) {
-    const current = dayMap.get(date);
-    if (current) return current;
-    const next = {
-      values: new Map<string, { values: number[]; unit: string | null; evidence: BodyEvidenceKind[]; providers: string[] }>(),
-      exerciseCount: 0,
-      exerciseMinutes: 0,
-      exerciseElevationM: 0,
-      exerciseEvidence: [] as BodyEvidenceKind[],
-    };
-    dayMap.set(date, next);
-    return next;
-  }
-
-  for (const row of observations.data ?? []) {
-    const date = asDate((row as any).physiological_date);
-    const metricKey = typeof (row as any).metric_key === 'string' ? (row as any).metric_key : '';
-    const numeric = Number((row as any).value_numeric);
-    if (!date || !metricKey || !Number.isFinite(numeric)) continue;
-
-    const day = ensure(date);
-    const bucket: {
-      values: number[];
-      unit: string | null;
-      evidence: BodyEvidenceKind[];
-      providers: string[];
-    } = day.values.get(metricKey) ?? {
-      values: [],
-      unit: typeof (row as any).unit === 'string' ? (row as any).unit : null,
-      evidence: [],
-      providers: [],
-    };
-
-    bucket.values.push(numeric);
-    bucket.evidence.push(normalizeEvidenceKind((row as any).data_level));
-    if (typeof (row as any).provider === 'string') bucket.providers.push((row as any).provider);
-    day.values.set(metricKey, bucket);
-  }
-
-  for (const row of exercise.data ?? []) {
-    const date = asDate((row as any).physiological_date);
-    if (!date) continue;
-    const day = ensure(date);
-    day.exerciseCount += 1;
-    day.exerciseMinutes += minutesBetween((row as any).started_at, (row as any).ended_at);
-    const elevation = Number((row as any).elevation_gain_m);
-    if (Number.isFinite(elevation)) day.exerciseElevationM += elevation;
-    day.exerciseEvidence.push(normalizeEvidenceKind((row as any).data_level));
-  }
-
-  const days: BodyHistoryDay[] = [...dayMap.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([date, raw]) => {
-      const metrics: Record<string, BodyMetricValue> = {};
-      const evidenceKinds: BodyEvidenceKind[] = [...raw.exerciseEvidence];
-
-      for (const [metricKey, bucket] of raw.values.entries()) {
-        const value = median(bucket.values);
-        if (value === null) continue;
-        const evidence = mergeEvidenceKinds(bucket.evidence);
-        evidenceKinds.push(...bucket.evidence);
-        metrics[metricKey] = {
-          metricKey,
-          value,
-          unit: bucket.unit,
-          evidence,
-          provider: bucket.providers[0] ?? null,
-        };
-      }
-
-      const observedCore = BODY_CORE_METRICS.filter((metric) => metrics[metric]).length;
-      return {
-        date,
-        metrics,
-        exerciseCount: raw.exerciseCount,
-        exerciseMinutes: raw.exerciseMinutes,
-        exerciseElevationM: raw.exerciseElevationM,
-        coverage: observedCore / BODY_CORE_METRICS.length,
-        evidenceKinds: [...new Set(evidenceKinds)],
-      };
-    });
-
-  return {
-    startDate,
-    endDate,
-    latestObservedDate: days.length ? days[days.length - 1].date : null,
-    days,
+  const input: DailyInput[] = observations.map(row => ({ id: row.id, metricKey: row.metric_key,
+    physiologicalDate: row.physiological_date, value: row.value_numeric === null ? null : Number(row.value_numeric),
+    startedAt: row.started_at, endedAt: row.ended_at, unit: row.unit, dataLevel: row.data_level, provider: row.provider,
+    sourceDevice: row.source_device, normalizerVersion: row.normalizer_version }));
+  const points = canonicalDailySeries(input);
+  const dayMap = new Map<string, BodyHistoryDay>();
+  const ensure = (date: string): BodyHistoryDay => {
+    const day = dayMap.get(date) ?? { date, metrics: {}, exerciseCount: 0, exerciseMinutes: 0,
+      exerciseElevationM: 0, coverage: 0, evidenceKinds: [] };
+    dayMap.set(date, day); return day;
   };
+  for (const point of points) {
+    const day = ensure(point.physiologicalDate);
+    const evidence = point.dataLevel === 'mixed' ? 'mixed' : normalizeEvidenceKind(point.dataLevel);
+    day.metrics[point.metricKey] = { metricKey: point.metricKey, value: point.value, unit: point.unit,
+      provider: point.provider ?? null, evidence, sourceKey: point.sourceKey, observationIds: point.observationIds };
+    day.evidenceKinds.push(evidence);
+  }
+  for (const row of exercise) {
+    const day = ensure(row.physiological_date);
+    day.exerciseCount++;
+    const minutes = (Date.parse(row.ended_at) - Date.parse(row.started_at)) / 60000;
+    if (Number.isFinite(minutes) && minutes >= 0) day.exerciseMinutes += minutes;
+    if (row.elevation_gain_m !== null) day.exerciseElevationM += Number(row.elevation_gain_m) || 0;
+    day.evidenceKinds.push(normalizeEvidenceKind(row.data_level));
+  }
+  const days = [...dayMap.values()].sort((a, b) => a.date.localeCompare(b.date));
+  for (const day of days) {
+    day.coverage = BODY_CORE_METRICS.filter(key => day.metrics[key]).length / BODY_CORE_METRICS.length;
+    day.evidenceKinds = [...new Set(day.evidenceKinds)];
+  }
+  return { startDate, endDate, days, points, latestObservedDate: days.at(-1)?.date ?? null };
 }

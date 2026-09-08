@@ -11,7 +11,11 @@ describe('admin integrations security contract', () => {
   it('stores credentials by Vault reference rather than plaintext API-key column', () => {
     expect(migration).toContain('credential_secret_id');
     expect(migration).toContain('vault.create_secret');
-    expect(migration).not.toMatch(/\bapi_key\s+text\b/i);
+    // The RPC accepts api_key as an input before storing it in Vault. Check storage, not parameters.
+    const table = migration.slice(migration.indexOf('create table'), migration.indexOf('create index'));
+    expect(table).toContain('public.subject_integrations');
+    expect(table).toContain('credential_secret_id');
+    expect(table).not.toMatch(/\bapi_key\s+text\b/i);
   });
 
   it('requires admin for credential mutation', () => {

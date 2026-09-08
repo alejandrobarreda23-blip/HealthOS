@@ -36,7 +36,7 @@ function evidenceClass(state: BodySystemState) {
 export default function BodyFigureV4({ systems, selectedSystem, onSelectSystem, isPresent, mode }: Props) {
   const byKey = new Map(systems.map((system) => [system.key, system]));
   const selected = byKey.get(selectedSystem)!;
-  const findingSystem = systems.find((system) => system.finding)?.key ?? null;
+  const findingSystems = systems.filter((system) => system.finding).map(s => s.key);
   const anyMeasuredMotion = systems.some((system) => canAnimateBodyChannel('measured-flow', system.canAnimate));
 
   const channelClass = (key: BodySystemKey) => {
@@ -52,7 +52,7 @@ export default function BodyFigureV4({ systems, selectedSystem, onSelectSystem, 
     <div className={`bodyV4Figure mode-${mode} ${anyMeasuredMotion ? 'has-motion' : 'still'}`}>
       <svg viewBox="0 0 620 820" role="img" aria-labelledby="body-v4-title body-v4-desc">
         <title id="body-v4-title">Organismo fisiológico navegable</title>
-        <desc id="body-v4-desc">El cuerpo funciona como índice de sistemas y evidencia. La niebla significa ausencia; el movimiento sólo puede proceder de señal medida.</desc>
+        <desc id="body-v4-desc">El cuerpo funciona como índice de señales y evidencia. La niebla significa datos insuficientes, no enfermedad.</desc>
         <defs>
           <radialGradient id="v4BodyFill" cx="50%" cy="34%" r="68%"><stop offset="0" stopColor="#fbfdfb" stopOpacity="1"/><stop offset=".48" stopColor="#dfeae3" stopOpacity=".82"/><stop offset="1" stopColor="#cbd9d0" stopOpacity=".18"/></radialGradient>
           <radialGradient id="v4Core" cx="50%" cy="43%" r="56%"><stop offset="0" stopColor="#8ea999" stopOpacity=".32"/><stop offset=".5" stopColor="#c9d9cf" stopOpacity=".18"/><stop offset="1" stopColor="#fff" stopOpacity="0"/></radialGradient>
@@ -98,13 +98,13 @@ export default function BodyFigureV4({ systems, selectedSystem, onSelectSystem, 
           })}
         </g>
 
-        {findingSystem && (() => { const n = NODES[findingSystem]; return <g className="bodyV4Finding" filter="url(#v4Glow)"><circle cx={n.cx + 26} cy={n.cy - 25} r="6"/><circle className="ring" cx={n.cx + 26} cy={n.cy - 25} r="14"/></g>; })()}
+        {findingSystems.map(key => { const n = NODES[key]; return <g key={key} className="bodyV4Finding" filter="url(#v4Glow)"><circle cx={n.cx + 26} cy={n.cy - 25} r="6"/><circle className="ring" cx={n.cx + 26} cy={n.cy - 25} r="14"/></g>; })}
       </svg>
 
       <div className="bodyV4FigureReadout">
         <span className={anyMeasuredMotion ? 'active' : ''}/>
         <div><small>{mode === 'state' ? 'Estado' : mode === 'coverage' ? 'Cobertura' : 'Procedencia'}</small><strong>{selected.title}</strong></div>
-        <p>{anyMeasuredMotion ? 'Movimiento respaldado por señal medida.' : isPresent ? 'Organismo quieto: no hay canal medido elegible en la fecha.' : 'Historia reconstruida sin inventar movimiento.'}</p>
+        <p>{anyMeasuredMotion ? 'Movimiento respaldado por señal medida.' : 'Vista descriptiva; no representa movimiento fisiológico.'}</p>
       </div>
     </div>
   );

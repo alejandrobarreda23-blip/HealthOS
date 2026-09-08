@@ -1,4 +1,5 @@
 import type { FindingCandidateV1 } from '../health/findings-v1/types';
+import type { DailyPoint } from '../health/metrics/daily-series';
 
 export type BodySystemKey =
   | 'autonomic'
@@ -24,6 +25,8 @@ export interface BodyMetricValue {
   unit: string | null;
   evidence: BodyEvidenceKind;
   provider: string | null;
+  sourceKey?: string;
+  observationIds?: string[];
 }
 
 export interface BodyHistoryDay {
@@ -41,6 +44,7 @@ export interface BodyHistorySnapshot {
   endDate: string;
   latestObservedDate: string | null;
   days: BodyHistoryDay[];
+  points?: DailyPoint[];
 }
 
 export interface BodySystemState {
@@ -52,6 +56,7 @@ export interface BodySystemState {
   status: BodyCoverageStatus;
   evidenceKinds: BodyEvidenceKind[];
   finding: FindingCandidateV1 | null;
+  findings?: FindingCandidateV1[];
   hasExactDaySignal: boolean;
   canAnimate: boolean;
 }

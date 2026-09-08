@@ -11,11 +11,12 @@ describe('Body V3 product/epistemic contract', () => {
   it('reads historical physiology from normalized observations instead of inventing interpolation', () => {
     expect(history).toContain(".from('observations')");
     expect(history).toContain(".from('exercise_sessions')");
-    expect(timeline).toContain("className={`${day ? 'has-data' : 'gap'}");
+    expect(timeline).toContain("className={`${day ? 'data' : 'gap'}");
   });
 
-  it('keeps historical findings unreconstructed rather than projecting current findings backwards', () => {
-    expect(screen).toContain('Los hallazgos históricos no se recalculan ni se proyectan retrospectivamente');
+  it('binds recalculated historical findings to the selected date instead of the current brief', () => {
+    expect(screen).toContain('selectBody(history.data, selectedDate)');
+    expect(screen).not.toContain('data?.activeFindings');
   });
 
   it('uses fog as missingness and amber only as an evidence beacon', () => {

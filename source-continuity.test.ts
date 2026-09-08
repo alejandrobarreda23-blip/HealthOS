@@ -1,6 +1,6 @@
 import{describe,it,expect}from'vitest';
-import{detectSourceContinuitySignals,suppressSourceDuplicatedStaleOpportunities}from'../src/acquisition/source-continuity';
-import type{AcquisitionOpportunity}from'../src/acquisition/types';
+import{detectSourceContinuitySignals,suppressSourceDuplicatedStaleOpportunities}from'./src/acquisition/source-continuity';
+import type{AcquisitionOpportunity}from'./src/acquisition/types';
 
 function stale(metricKey:string,displayName:string,days:number,provider='intervals_icu'):AcquisitionOpportunity{
  return{metricKey,displayName,domain:'test',status:'stale',action:'consider_measurement',priority:.8,priorityTier:1,reason:'stale',measurementMode:'passive_daily',longitudinalRoles:['dynamics'],boundary:'test',lastProvider:provider,lastObservedAt:`2026-08-${String(31-days).padStart(2,'0')}T12:00:00Z`,groupKey:'wearable_core',groupLabel:'Cobertura pasiva diaria',actionability:'passive',acquisitionRationale:'base pasiva',coverage:{metricKey,status:'stale',observationCount:100,distinctDays:100,recentDistinctDays:0,daysSinceLastObservation:days,densityRatio:0,minimumDistinctDays:20,targetDistinctDays:30,windowDays:42}};
