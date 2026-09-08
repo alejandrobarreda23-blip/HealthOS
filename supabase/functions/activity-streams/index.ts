@@ -30,9 +30,9 @@ Deno.serve(async(req:Request)=>{
     if(integration){
       if(integration.status!=='active')return response({message:'La conexión del perfil está desactivada.'},409);
       if(String(record.payload?.icu_athlete_id)!==String(integration.external_account_id))return response({message:'La actividad no pertenece a la cuenta conectada.'},409);
-      const {data:secrets,error:secretError}=await service.schema('vault').from('decrypted_secrets').select('decrypted_secret').eq('id',integration.credential_secret_id).limit(1);
+      const {data:credential,error:secretError}=await service.rpc('activity_stream_credential',{target_subject_id:body.subject_id,target_athlete_id:integration.external_account_id});
       if(secretError)return response({message:'No se pudo usar la conexión de origen.'},503);
-      key=secrets?.[0]?.decrypted_secret;
+      key=typeof credential==='string'?credential:undefined;
     }else if(scope.access==='admin'&&String(record.payload?.icu_athlete_id)===Deno.env.get('INTERVALS_ATHLETE_ID')){
       // The legacy global credential is accessible only to a verified administrator.
       key=Deno.env.get('INTERVALS_API_KEY');
