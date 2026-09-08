@@ -5,6 +5,7 @@ import { localToday, minusDays, type DailyPoint } from '../health/metrics/daily-
 import { CONTEXT_METRICS, contextDates, contextSignal, contextTraining, trainingTotals } from '../health/activity-context';
 import { durationLabel, numberLabel, sportLabel } from '../health/activities';
 import './activity-context.css';
+import { SessionReading } from './ActivityReading';
 
 export default function ActivityContext({ session, sessions, onOpenBody }: { session: TrainingSession; sessions: TrainingSession[]; onOpenBody: (date: string) => void }) {
   const today = localToday();
@@ -29,7 +30,6 @@ export function ActivityContextView({ session, sessions, points, today, onOpenBo
   const signals = useMemo(() => CONTEXT_METRICS.map(metric => ({...metric,...contextSignal(points,metric.key,date,today)})),[points,date,today]);
   const activeIndex = Math.max(0,dates.indexOf(activeDate));
   const activeTraining = training.days[activeIndex];
-  const afterDays = dates.filter(d => d > date && d <= today).length;
   const trainingValues = training.days.map(day => trainingTotals(day.sessions)[trainingMetric]);
   const trainingMax = Math.max(1,...trainingValues.filter((v): v is number => v !== null));
   const sportColors = ['#477263','#a78150','#747296','#52889a','#a96869','#687b4e'];
@@ -51,11 +51,7 @@ export function ActivityContextView({ session, sessions, points, today, onOpenBo
       <div><span>28 días anteriores</span><strong>{durationLabel(training.previous28.seconds)}</strong><small>{numberLabel(training.previous28.elevation,'m D+')} · {training.previous28.elevationCount}/{training.previous28.count} sesiones con desnivel</small></div>
       <div><span>Bloque de {sportLabel(session.activity_type)}</span><strong>Jornada {training.consecutive}</strong><small>Días consecutivos con este deporte hasta la sesión</small></div>
     </div>
-    <div className="contextInsights">
-      <details><summary>{training.consecutive > 1 ? `Esta sesión llega tras ${training.consecutive-1} días consecutivos de ${sportLabel(session.activity_type)}.` : 'No hay otra jornada de este deporte registrada el día anterior.'}</summary><p>Se cuentan fechas consecutivas con al menos una sesión del mismo deporte, terminando el {date}. Ausencia de una sesión registrada no demuestra descanso. No se utiliza entrenamiento posterior.</p></details>
-      {training.share !== null && <details><summary>Representa el {Math.round(training.share)} % de la duración registrada en los 7 días hasta esta sesión.</summary><p>Denominador: {durationLabel(trainingTotals(training.trailing).seconds)} en {training.trailing.length} sesiones, desde {minusDays(date,6)} hasta el inicio de esta sesión, incluyéndola. Se suman todos los deportes y la duración guardada; no es una medida de carga fisiológica.</p></details>}
-      <details><summary>{afterDays < 7 ? `Seguimiento aún parcial: han transcurrido ${afterDays} de los 7 días posteriores.` : `${training.after.length} sesiones registradas en los 7 días posteriores.`}</summary><p>El seguimiento termina el {minusDays(date,-7)}. Otros entrenamientos y factores no registrados pueden coincidir con los cambios observados. Cada señal informa por separado de su cobertura.</p></details>
-    </div>
+    <SessionReading session={session} sessions={sessions} points={points} today={today}/>
     <div className="contextChartHeader"><div><h3>Historia sincronizada</h3><small>Línea discontinua: sesión · banda: 50 % central de la referencia previa</small></div><label>Entrenamiento<select value={trainingMetric} onChange={e=>setTrainingMetric(e.target.value as 'seconds'|'elevation')}><option value="seconds">Duración</option><option value="elevation">Desnivel</option></select></label></div>
     <div className="contextDateControl"><label htmlFor={`context-${session.id}`}>Explorar día: <strong>{activeDate}</strong>{activeDate > today ? ' · pendiente' : ''}</label><input id={`context-${session.id}`} type="range" min="0" max="35" step="1" value={activeIndex} onChange={e=>setActiveDate(dates[Number(e.target.value)])} aria-valuetext={activeDate}/><button onClick={()=>setActiveDate(date)}>Volver a la sesión</button></div>
     <div className="contextCharts">

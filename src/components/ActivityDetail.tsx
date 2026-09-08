@@ -39,6 +39,6 @@ export function ActivityDetail({ session: s, sessions, userId, onOpenBody, color
       <details><summary>Procedencia y trazabilidad</summary><p>Fuente: {s.provider} · dispositivo: {s.source_device ?? 'sin identificar'}.</p><p>Inicio guardado: {s.started_at}<br/>Fin guardado: {s.ended_at}</p><p>Sesión: {s.id}<br/>Registro de origen: {s.source_record_id ?? 'no vinculado'}</p><p>Potencia y energía son valores de la fuente; esta vista no verifica si fueron medidos o estimados.</p></details>
     </>}
     {tab === 'compare' && <ActivityComparison session={s} sessions={sessions}/>}
-    {tab === 'context' && <ActivityContext session={s} sessions={sessions} onOpenBody={onOpenBody}/>}
+    {tab === 'context' && <ActivityContext session={displaySession} sessions={sessions} onOpenBody={onOpenBody}/>}
   </article>;
 }
