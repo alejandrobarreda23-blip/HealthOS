@@ -73,6 +73,25 @@ export const METRIC_DICTIONARY_V1: Record<string, MetricDefinitionV1> = {
   }
 };
 
+// Provider summaries retain their own identity; Ultrahuman HRV is not RMSSD.
+for (const [key, name, unit, family] of [
+  ['ultrahuman_sleep_hrv', 'HRV nocturna · Ultrahuman', 'ms', 'provider_hrv_unspecified'],
+  ['sleep_efficiency', 'Eficiencia del sueño', '%', 'sleep'],
+  ['temperature_deviation', 'Desviación de temperatura', 'degC', 'temperature'],
+  ['deep_sleep_duration', 'Sueño profundo', 'min', 'sleep'],
+  ['rem_duration', 'Sueño REM', 'min', 'sleep'],
+  ['ultrahuman_active_minutes', 'Minutos activos · Ultrahuman', 'min', 'activity'],
+]) {
+  METRIC_DICTIONARY_V1[key] = {
+    metricKey: key, displayName: name, canonicalUnit: unit,
+    semanticDefinition: key === 'ultrahuman_sleep_hrv' ? 'Resumen nocturno del proveedor. No especifica RMSSD o SDNN; no se equipara a ellos.' : `Resumen del proveedor: ${name}.`,
+    dataLevel: 'derived', measurementFamily: family, preferredSources: ['ultrahuman'],
+    sourceEquivalencePolicy: 'provider_algorithm_sensitive', physiologicalDayRule: 'provider_date',
+    baseline: { windowDays: 42, minSamples: 20, minCoverage: .5, aggregation: 'median' },
+    comparisonDirection: 'neutral', missingnessPolicy: 'preserve_gap', version: 'metric_dictionary_v1',
+  };
+}
+
 export function getMetricDefinition(metricKey: string): MetricDefinitionV1 | null {
   return METRIC_DICTIONARY_V1[metricKey] ?? null;
 }

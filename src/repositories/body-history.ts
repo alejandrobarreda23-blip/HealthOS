@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
 import { canonicalDailySeries, type DailyInput } from '../health/metrics/daily-series';
 import { readAllPages } from './pagination';
+import { MONITORING_METRICS } from '../health/monitoring-metrics';
 import { BODY_CORE_METRICS, normalizeEvidenceKind, type BodyHistoryDay, type BodyHistorySnapshot } from '../body/view-state';
 
 export async function getBodyHistory(userId: string, startDate: string, endDate: string): Promise<BodyHistorySnapshot> {
@@ -9,7 +10,7 @@ export async function getBodyHistory(userId: string, startDate: string, endDate:
   const [observations, exercise] = await Promise.all([
     readAllPages((from, to) => client.from('observations')
       .select('id,physiological_date,metric_key,value_numeric,unit,data_level,provider,source_device,normalizer_version,started_at,ended_at')
-      .eq('user_id', userId).in('metric_key', [...BODY_CORE_METRICS, 'weight'])
+      .eq('user_id', userId).in('metric_key', MONITORING_METRICS.map(metric => metric.key))
       .gte('physiological_date', startDate).lte('physiological_date', endDate)
       .order('physiological_date').order('id').range(from, to)),
     readAllPages((from, to) => client.from('exercise_sessions')
