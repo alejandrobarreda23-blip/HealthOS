@@ -47,7 +47,7 @@ export function formatClock(minute: number) {
   const value = (Math.round(minute) + 1440) % 1440;
   return `${String(Math.floor(value / 60)).padStart(2, '0')}:${String(value % 60).padStart(2, '0')}`;
 }
-export function sleepRhythm(input: WeeklyInput, end: string) {
+export function comparableSleepNights(input: WeeklyInput, end: string) {
   const durations = series(input, 'sleep_duration', end);
   const nights = durations.flatMap(p => {
     const candidates = input.sleeps.filter(s => s.date === p.physiologicalDate && sourceOf(s) === p.sourceKey && s.timezone && Date.parse(s.end) > Date.parse(s.start) && Date.parse(s.end) - Date.parse(s.start) <= 20 * 3600000);
@@ -60,6 +60,10 @@ export function sleepRhythm(input: WeeklyInput, end: string) {
   let segmentStart = nights.length - 1;
   while (segmentStart > 0 && nights[segmentStart - 1].timezone === nights.at(-1)?.timezone) segmentStart--;
   const comparable = nights.slice(Math.max(0, segmentStart));
+  return comparable;
+}
+export function sleepRhythm(input: WeeklyInput, end: string) {
+  const comparable = comparableSleepNights(input, end);
   const window = (start: string, stop: string) => {
     const rows = comparable.filter(n => n.date >= start && n.date <= stop);
     return { rows, count: rows.length, bedtime: rows.length >= 5 ? clockSummary(rows.map(n => n.bed)) : null, wake: rows.length >= 5 ? clockSummary(rows.map(n => n.wake)) : null };
