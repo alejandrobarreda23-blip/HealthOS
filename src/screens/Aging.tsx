@@ -1,3 +1,6 @@
+import MonitoringInsights from '../components/MonitoringInsights';
+import { useBodyHistory } from '../hooks/useBodyHistory';
+import { localToday } from '../health/metrics/daily-series';
 import { useState } from 'react';
 import {
   Activity,
@@ -27,7 +30,8 @@ const SYSTEMS = [
 
 type AgingMode = 'physiology' | 'visible';
 
-export default function Aging(){
+export default function Aging({onOpenTrend}:{onOpenTrend?:(key:string)=>void}){
+  const history=useBodyHistory(localToday(),90);
   const[mode,setMode]=useState<AgingMode>('physiology');
   const {data,loading,error}=useHealthBriefV1();
   const observedSystems=SYSTEMS.filter(s=>s.source(data)).length;
@@ -54,6 +58,9 @@ export default function Aging(){
 
     {mode==='visible'?<VisibleAging/>:<>
       {error&&<p className="error">{error}</p>}
+      {history.error && <p role="alert">{history.error}</p>}
+      {!history.loading && !history.error && <MonitoringInsights mode="compact" points={history.data?.points??[]} asOf={localToday()} onOpenTrend={onOpenTrend}/>}
+      <details><summary>Qué podemos estimar sobre envejecimiento y qué falta</summary>
       <section className="agingHeroV2">
         <article className="agingPrimaryCard card"><div className="agingHeroKicker">HEALTHOS PACE</div><div className="agingPaceDisplay">{paceEligible?'—':'—'}</div><strong>No publicado todavía</strong><p>HealthOS no mostrará un número global hasta que el runtime Aging tenga suficientes sistemas, historia y evidencia independiente.</p><div className="agingEligibility"><span><b>{observedSystems}</b>/7 sistemas con alguna señal</span><span><b>{Math.round((data?.dataQuality.overallCoverage??0)*100)}%</b> cobertura reciente</span></div></article>
         <article className="agingMethodCard card"><div className="agingHeroKicker">CAPAS DE EDAD</div><div className="agingMethodRow"><span><TimerReset size={16}/>Cronológica</span><strong>—</strong><small>fecha de nacimiento no conectada al runtime</small></div><div className="agingMethodRow"><span><Dna size={16}/>PhenoAge</span><strong>—</strong><small>requiere analítica completa y unidades verificadas</small></div><div className="agingMethodRow"><span><CircleDashed size={16}/>Dynamic Aging</span><strong>Investigación</strong><small>respuesta y recuperación; no se fusiona con Pace</small></div></article>
@@ -68,6 +75,7 @@ export default function Aging(){
         <article className="card agingEvidenceCard"><div className="eyebrow">MADUREZ</div><h3>Lo que sí podemos afirmar</h3><p>La capa Aging puede mostrar cobertura y trayectoria de sistemas que ya estén alimentados por datos reales. No convierte cobertura en edad biológica.</p><div className="agingRule"><span>Estado</span><b>observado</b></div><div className="agingRule"><span>Trayectoria</span><b>cuando haya historia suficiente</b></div><div className="agingRule"><span>Pace global</span><b>bloqueado hasta validación</b></div></article>
         <article className="card agingEvidenceCard"><div className="eyebrow">PRÓXIMO VALOR</div><h3>Qué desbloquea más información</h3><p>Las mediciones independientes añaden valor cuando abren sistemas actualmente ciegos, no por aumentar el número de métricas del mismo sensor.</p><div className="agingNext"><span>01</span><div><strong>Presión arterial domiciliaria</strong><small>refuerza cardiovascular</small></div></div><div className="agingNext"><span>02</span><div><strong>Analítica estructurada</strong><small>metabólico · inflamación · renal · PhenoAge</small></div></div></article>
       </section>
+      </details>
       {loading&&<div className="agingLoading">Actualizando observabilidad…</div>}
     </>}
   </div>;

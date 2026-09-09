@@ -1,3 +1,4 @@
+import MonitoringInsights from '../components/MonitoringInsights';
 import { useEffect, useMemo, useState } from 'react';
 import { Activity, CircleGauge, Dumbbell, HeartPulse, Moon, Waves } from 'lucide-react';
 import BodyDossier from '../components/body/BodyDossier';
@@ -78,9 +79,11 @@ export default function Body({ onOpenTrend, onOpenActivities, initialDate }: Pro
         <span>Hoy: {asOfDate} · último registro: {latestObserved ?? 'sin datos'}. {latestObserved && latestObserved < asOfDate ? 'Los datos anteriores no describen el estado de hoy.' : ''}</span>
         {latestObserved && <button onClick={() => { setWindowDays(365); setSelectedDate(clampBodyDate(latestObserved,asOfDate,365)); }}>Ir al último dato</button>}
         {latestEvaluable ? <button onClick={() => { setWindowDays(365); setSelectedDate(clampBodyDate(latestEvaluable,asOfDate,365)); }}>Última ventana evaluable · {latestEvaluable}</button> : <span>Aún no hay una ventana evaluable para las señales diarias.</span>}
-        {onOpenActivities && <button onClick={() => onOpenActivities(selectedDate)}>Ver entrenamientos del {selectedDate}{selectedDay ? ` (${selectedDay.exerciseCount})` : ''}</button>}
+        {onOpenActivities && Boolean(selectedDay?.exerciseCount) && <button onClick={() => onOpenActivities(selectedDate)}>Ver entrenamientos del {selectedDate}{selectedDay ? ` (${selectedDay.exerciseCount})` : ''}</button>}
       </div>
 
+      {!history.loading && !history.error && <MonitoringInsights mode="compact" points={history.data?.points ?? []} asOf={selectedDate} onOpenTrend={openTrend}/>}
+      <details open><summary>Explorar el mapa corporal y sus señales</summary>
       <div className="bodyV4TopMetrics">
         <div><span>Fecha explorada</span><strong>{selectedDate}</strong></div>
         <div><span>Sistemas con señal</span><strong>{observedSystems}<small>/6</small></strong></div>
@@ -128,6 +131,7 @@ export default function Body({ onOpenTrend, onOpenActivities, initialDate }: Pro
           selectedDate={selectedDate} comparisonDate={comparisonDate} model={model}
           loading={history.loading} error={history.error} onOpenTrend={openTrend} />
       </div>
+      </details>
     </div>
   );
 }
