@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react';
+import Interpretation from './Interpretation';
+import { endingText, episodeNarrative, metricMeaning } from '../health/interpretation';
+import { useEffect, useRef, useState } from 'react';
 import { distance, episodeContext, labelFor, referenceBefore, type Episode, type EpisodeReading, type SignalHistory } from '../health/episodes';
 import { median, minusDays } from '../health/metrics/daily-series';
 import type { WeeklyInput } from '../health/weekly-learning';
@@ -8,29 +10,36 @@ import './episodes.css';
 
 function EpisodeChart({ report, episode, start, end, day, onDay }: { report: EpisodeReading; episode: Episode; start: string; end: string; day: string; onDay: (date: string) => void }) {
   const [width, setWidth] = useState(typeof window !== 'undefined' && window.innerWidth < 600 ? 360 : 700);
-  useEffect(() => { const resize = () => setWidth(window.innerWidth < 600 ? 360 : 700); window.addEventListener('resize', resize); return () => window.removeEventListener('resize', resize); }, []);
+  const container = useRef<HTMLDivElement>(null);
+  useEffect(() => { const node = container.current; if (!node) return; const resize = () => setWidth(Math.max(240, Math.round(node.getBoundingClientRect().width))); resize(); const observer = new ResizeObserver(resize); observer.observe(node); return () => observer.disconnect(); }, []);
+  const left = width < 500 ? 76 : 98, right = width - 24, plotWidth = right - left;
   const series = report.signals.filter(s => s.rows.some(r => r.date >= start && r.date <= end));
-  const x = (date: string) => 12 + (Date.parse(date) - Date.parse(start)) / Math.max(86400000, Date.parse(end) - Date.parse(start)) * (width - 24);
-  return <div className="episodeChart"><p>Mismas fechas · escalas independientes. La franja vertical marca el episodio; la horizontal, el rango previo de cada señal.</p>{series.map(signal => {
+  const x = (date: string) => left + (Date.parse(date) - Date.parse(start)) / Math.max(86400000, Date.parse(end) - Date.parse(start)) * plotWidth;
+  return <div className="episodeChart" ref={container}><p>Las curvas comparten fechas. Cada escala muestra sus valores reales. El fondo verde indica el rango previo; el sombreado dorado marca el tramo destacado de esa señal.</p>{series.map(signal => {
     const rows = signal.rows.filter(r => r.date >= start && r.date <= end);
     const member = episode.signals.find(s => s.key === signal.key);
     const reference = member?.reference ?? referenceBefore(signal, episode.start);
     const values = rows.map(r => ({ ...r, y: reference ? distance(r.value, reference.center, signal.circular) : signal.circular ? distance(r.value, rows[0].value, true) : r.value }));
     const threshold = reference?.threshold ?? 0;
     const low = Math.min(...values.map(r => r.y), reference ? -threshold : Infinity), high = Math.max(...values.map(r => r.y), reference ? threshold : -Infinity);
-    const padding = Math.max((high - low) * .15, 1), y = (v: number) => 85 - (v - low + padding) / (high - low + padding * 2) * 72;
+    const padding = Math.max((high - low) * .15, 1), y = (v: number) => 145 - (v - low + padding) / (high - low + padding * 2) * 105;
+    const axisValue = (offset: number) => { const raw = reference ? reference.center + offset : signal.circular ? rows[0].value + offset : offset; return signal.circular ? (raw % 1440 + 1440) % 1440 : raw; };
+    const ticks = [...new Set([low, reference ? 0 : (low + high) / 2, high])];
+    const guidance = metricMeaning(signal.key);
     const selected = rows.find(r => r.date === day);
     const paths: typeof values[] = [];
     for (const row of values) { if (!paths.length || row.date !== minusDays(paths.at(-1)!.at(-1)!.date, -1)) paths.push([]); paths.at(-1)!.push(row); }
     return <div className="episodeLane" key={signal.key}><div><strong>{labelFor(signal.key)}</strong><small>{selected ? `${episodeDate(day)} · ${episodeValue(signal.key, selected.value)}` : `${rows.length} días registrados · selecciona una fecha`}</small></div>
-      <svg viewBox={`0 0 ${width} 108`} role="img" aria-label={`${labelFor(signal.key)}, ${episodeDate(start)} a ${episodeDate(end)}. Detalle diario disponible debajo.`}>
-        <rect x={Math.max(12, x(episode.start))} width={Math.max(1, Math.min(width - 12, x(episode.end)) - Math.max(12, x(episode.start)))} y="3" height="90" fill="#e5c997" opacity=".25"/>
-        {reference && <><rect x="12" width={width - 24} y={y(threshold)} height={y(-threshold) - y(threshold)} fill="#dbe7df"/><line x1="12" x2={width - 12} y1={y(0)} y2={y(0)} stroke="#789486" strokeDasharray="4 4"/></>}
+      <svg viewBox={`0 0 ${width} 180`} role="img" aria-label={`${labelFor(signal.key)}, ${episodeDate(start)} a ${episodeDate(end)}. Detalle diario disponible debajo.`}>
+        {member && member.end >= start && member.start <= end && <rect x={Math.max(left, x(member.start))} width={Math.max(1, Math.min(right, x(member.end)) - Math.max(left, x(member.start)))} y="28" height="125" fill="#e5c997" opacity=".25"/>}
+        {reference && <><rect x={left} width={plotWidth} y={y(threshold)} height={y(-threshold) - y(threshold)} fill="#dbe7df"/><line x1={left} x2={right} y1={y(0)} y2={y(0)} stroke="#789486" strokeDasharray="4 4"/></>}
+        {ticks.map(t => <g key={t}><line x1={left} x2={right} y1={y(t)} y2={y(t)} stroke="#dbe3db" strokeWidth=".6"/><text x={left - 9} y={y(t) + 4} textAnchor="end" fontSize="11" fill="#4c6252">{episodeValue(signal.key, axisValue(t))}</text></g>)}
+        {member && member.start >= start && member.start <= end && <><line x1={x(member.start)} x2={x(member.start)} y1="26" y2="155" stroke="#967038" strokeDasharray="3 3"/><text x={Math.min(right, x(member.start) + 5)} y="18" textAnchor={x(member.start) > right - 100 ? 'end' : 'start'} fontSize="11" fill="#755325">Inicio · {episodeDate(member.start)}</text></>}
         {paths.filter(p => p.length > 1).map(p => <polyline key={p[0].date} points={p.map(r => `${x(r.date)},${y(r.y)}`).join(' ')} fill="none" stroke={member ? '#325f4c' : '#81939a'} strokeWidth="1.5"/>)}
         {values.map(r => <circle key={r.date} cx={x(r.date)} cy={y(r.y)} r={r.date === day ? 5 : 3} fill={member ? '#325f4c' : '#81939a'} onClick={() => onDay(r.date)}><title>{`${r.date}: ${episodeValue(signal.key, r.value)}`}</title></circle>)}
-        {day >= start && day <= end && <line x1={x(day)} x2={x(day)} y1="3" y2="93" stroke="#9d7537" strokeDasharray="3 3"/>}
-        <text x="12" y="106" fontSize="10">{episodeDate(start)}</text><text x={width - 12} y="106" textAnchor="end" fontSize="10">{episodeDate(end)}</text>
-      </svg>{!reference && <small>Sin referencia previa suficiente: se muestran únicamente los registros.</small>}
+        {day >= start && day <= end && <line x1={x(day)} x2={x(day)} y1="26" y2="155" stroke="#9d7537" strokeDasharray="3 3"/>}
+        <text x={left} y="174" fontSize="11">{episodeDate(start)}</text><text x={right} y="174" textAnchor="end" fontSize="11">{episodeDate(end)}</text>
+      </svg>{!reference && <small>Sin referencia previa suficiente: se muestran únicamente los registros.</small>}<details className="signalExplanation"><summary>Qué puede decirte esta señal</summary><p>{guidance.meaning}</p><p>{guidance.next}</p>{guidance.sources.map(source => <a key={source.url} href={source.url} target="_blank" rel="noopener noreferrer">{source.title} ↗</a>)}</details>
     </div>;
   })}</div>;
 }
@@ -61,7 +70,7 @@ export default function EpisodeExplorer({ report, input, initialId, onExplore, o
     {!list.length ? <div className="card"><h3>No hay episodios que cumplan todavía el criterio</h3><p>No equivale a que no haya cambios. Buscamos tres días consecutivos fuera de una referencia previa suficiente; puedes explorar las señales por fecha debajo.</p></div> : <>
       <div role="navigation" className="episodeList" aria-label="Elegir episodio">{list.slice(0, limit).map(e => <button key={e.id} aria-pressed={e.id === episode?.id} onClick={() => choose(e)}><small>{episodeDate(e.start)} – {episodeDate(e.end)}</small><b>{episodeTitle(e)}</b><span>{e.signals.map(s => labelFor(s.key)).join(' · ')}</span></button>)}</div>{list.length > limit && <button onClick={() => setLimit(n => n + 12)}>Ver episodios anteriores ({list.length - limit})</button>}
       {episode && <article className="card episodeDetail"><div className="eyebrow">{episodeDate(episode.start)} – {episodeDate(episode.end)}</div><h3>{episodeTitle(episode)}</h3>
-        <ol className="episodeSequence">{episode.signals.map(s => <li key={s.id}><time>{episodeDate(s.start)}</time><div><b>{labelFor(s.key)} · {episodeDelta(s.key, s.delta)}</b><p>{s.dates.length} días fuera de su rango previo. {s.status === 'returned' ? `Dos días dentro del rango al ${episodeDate(s.returnedAt!)}.` : s.status === 'ongoing' ? 'La observación continúa; aún no hay dos días de regreso.' : 'Un hueco o un cambio de dirección interrumpe el seguimiento; no confirmamos un regreso.'}</p></div></li>)}</ol>
+        <Interpretation narrative={episodeNarrative(episode)}/><details><summary>Fechas y desenlace de cada señal</summary><ol className="episodeSequence">{episode.signals.map(s => <li key={s.id}><time>{episodeDate(s.start)}</time><div><b>{labelFor(s.key)} · {episodeDelta(s.key, s.delta)}</b><p>La diferencia resume solo los {s.dates.length} días destacados. {endingText(s)}</p></div></li>)}</ol></details>
         <p className="muted">Este es el orden de los cambios registrados por fecha fisiológica. No establece qué los causó ni el orden dentro de un mismo día.</p>
         <div className="episodeWindow"><label>Desde <input aria-label="Inicio del gráfico conjunto" type="date" min={minusDays(report.asOf, 365)} max={end} value={start} onChange={e => changeRange(e.target.value, end)}/></label><label>Hasta <input aria-label="Fin del gráfico conjunto" type="date" min={start} max={report.end} value={end} onChange={e => changeRange(start, e.target.value)}/></label><button onClick={() => setRange({ id: episode.id, start: episode.start, end: episode.end })}>Solo el episodio</button><button onClick={() => setRange(null)}>Ver antes y después</button></div>
         <EpisodeChart report={report} episode={episode} start={start} end={end} day={day} onDay={setPickedDay}/>
