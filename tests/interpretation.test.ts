@@ -29,14 +29,14 @@ describe('interpretación sistemática', () => {
     expect(episodeHeadline(e)).toBe('La HRV nocturna subió; después el sueño se acortó'); expect(n.observation).toContain('mediana de los 2 días destacados'); expect(n.connection).toContain('comparten 2 días'); expect(n.meaning).toContain('no demuestra un mejor descanso');
   });
   it('una relación inconsistente no se convierte en un patrón causal', () => {
-    const n = questionNarrative(question('inconsistent')); expect(n.title).toContain('aún no es un patrón estable'); expect(n.connection).toContain('No usamos la última comparación'); expect(n.level).toBe('inconsistent');
+    const n = questionNarrative(question('inconsistent')); expect(n.title).toContain('no se acompaña de un cambio consistente en tu pulso'); expect(n.connection).toContain('No usamos la última comparación'); expect(n.level).toBe('inconsistent');
   });
   it('una primera asociación no se presenta como repetida', () => {
     const n = questionNarrative(question('first_signal')); expect(n.level).toBe('first'); expect(n.connection).toContain('fechas nuevas');
   });
   it('la repetición no prueba ni causa ni beneficio', () => {
     const n = questionNarrative(question('repeated')); expect(n.level).toBe('repeated'); expect(n.connection).toContain('factores no registrados'); expect(n.meaning).toContain('no demuestra por sí solo');
-    expect(n.observation).toContain('noches por encima de tu referencia'); expect(n.observation).not.toContain('grupo superior');
+    expect(n.title).toContain('noches más largas'); expect(n.observation).not.toContain('grupo superior');
   });
   it('la ausencia de comparación no produce una interpretación positiva', () => {
     const q = question('insufficient'); q.blocks = []; const n = questionNarrative(q); expect(n.observation).toContain('Todavía no hay suficientes'); expect(n.level).toBe('insufficient');

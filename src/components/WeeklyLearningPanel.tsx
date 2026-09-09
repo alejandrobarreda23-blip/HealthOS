@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+import SleepRhythmChart from './SleepRhythmChart';
 import Interpretation from './Interpretation';
 import { questionNarrative } from '../health/interpretation';
 import { formatMonitoring, MONITORING_METRICS } from '../health/monitoring-metrics';
@@ -7,8 +9,8 @@ export const contextLabel = (type: string) => ({ travel: 'Viaje', illness: 'Enfe
 const dateLabel = (date: string) => new Date(`${date}T12:00:00Z`).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
 const signalLabel = (key: string) => MONITORING_METRICS.find(m => m.key === key)?.label ?? key;
 const deltaLabel = (key: string, delta: number) => delta === 0 ? 'sin diferencia en la mediana' : `${key === 'sleep_duration' && Math.abs(delta) < 60 ? `${Math.round(Math.abs(delta))} min` : formatMonitoring(key, Math.abs(delta))} ${delta > 0 ? 'más' : 'menos'}`;
-export default function WeeklyLearningPanel({ report, memories, following, onOpenTrend, onAddContext, onFollow }: {
-  report: WeeklyLearning; memories: QuestionMemory[]; following: string[]; onOpenTrend?: (key: string) => void;
+export default function WeeklyLearningPanel({ report, memories, following, onOpenTrend, onAddContext, onFollow, checkInForm }: {
+  checkInForm?: ReactNode; report: WeeklyLearning; memories: QuestionMemory[]; following: string[]; onOpenTrend?: (key: string) => void;
   onAddContext?: (date: string) => void; onFollow?: (question: WeeklyQuestion, following: boolean) => void;
 }) {
   const rhythm = report.rhythm;
@@ -20,18 +22,21 @@ export default function WeeklyLearningPanel({ report, memories, following, onOpe
 
     <section className="card weeklyRhythm" aria-label="Ritmo de sueño"><div className="eyebrow">DURACIÓN Y HORARIOS SON PREGUNTAS DISTINTAS</div><h2>Tu ritmo de sueño</h2>
       {rhythm.recent.bedtime ? <><div className="weeklyRhythmNumbers"><div><small>Inicio habitual del intervalo de sueño</small><strong>{formatClock(rhythm.recent.bedtime.minute)}</strong><span>Variación típica: {Math.round(rhythm.recent.bedtime.deviation)} min</span></div><div><small>Final habitual</small><strong>{formatClock(rhythm.recent.wake!.minute)}</strong><span>{rhythm.timezone}</span></div></div><p>{rhythm.bedtimeShift === null ? 'Faltan cinco noches comparables de la semana anterior para describir un cambio de horario.' : rhythm.bedtimeShift === 0 ? 'El inicio habitual coincide con el de la semana anterior.' : `El inicio habitual se ha desplazado ${Math.round(Math.abs(rhythm.bedtimeShift))} min ${rhythm.bedtimeShift > 0 ? 'más tarde' : 'más temprano'} respecto a la semana anterior.`}</p></> : <p>Se necesitan cinco noches con horarios y zona horaria comparables para resumir la regularidad. Las noches disponibles aparecen debajo.</p>}
-      <div className="weeklyNights">{rhythm.recent.rows.map(night => <div key={night.date}><time>{dateLabel(night.date)}</time><span>{formatClock(night.bed)} → {formatClock(night.wake)}</span><strong>{formatMonitoring('sleep_duration', night.duration)}</strong>{onAddContext && <button aria-label={`Añadir contexto del ${night.date}`} onClick={() => onAddContext(night.date)}>＋ Contexto</button>}</div>)}</div>
+      <SleepRhythmChart rows={rhythm.recent.rows} end={report.end} onAddContext={onAddContext}/>
       {rhythm.weekend.sleepDifference !== null && <div className="weeklyAside"><h3>¿Se distingue el fin de semana?</h3><p>En las últimas cuatro semanas, el sueño atribuido al sábado o domingo {rhythm.weekend.sleepDifference === 0 ? 'tiene la misma mediana de duración que el de lunes a viernes' : `dura ${deltaLabel('sleep_duration', rhythm.weekend.sleepDifference)} que el de lunes a viernes`}. {rhythm.weekend.wakeShift === 0 ? 'El final habitual coincide en ambos grupos.' : `El final habitual está ${Math.round(Math.abs(rhythm.weekend.wakeShift!))} min ${rhythm.weekend.wakeShift! > 0 ? 'más tarde' : 'más temprano'}.`}</p><small>{rhythm.weekend.weekendCount} noches de fin de semana y {rhythm.weekend.weekdayCount} entre semana. Se agrupan por fecha de despertar; no presupone tu horario laboral.</small></div>}
       <details><summary>Cómo leemos los horarios</summary><p>Usamos el intervalo más largo de cada día, de la misma fuente que el resumen de duración. Las siestas y duplicados no añaden noches. Los horarios se leen en la zona registrada; un cambio de zona o fuente interrumpe la comparación. La mediana circular evita interpretar 23:55 y 00:05 como horarios alejados. La variación típica es la mediana de las distancias al horario habitual. El intervalo registrado puede incluir tiempo despierto; la duración procede del resumen de sueño.</p></details>
     </section>
 
-    <section aria-label="Preguntas que seguimos"><h2>Qué se repite y qué sigue abierto</h2><p className="muted">Cada pregunta conserva su referencia inicial. Revisarla otra semana no cuenta como una confirmación nueva. Las preguntas que sigues aparecen primero.</p>
-      {[...report.questions].sort((a, b) => Number(following.includes(b.id)) - Number(following.includes(a.id))).map(q => {
+    <section aria-label="Preguntas que seguimos"><h2>Qué se repite y qué sigue abierto</h2><p className="muted">Las respuestas se contrastan con días nuevos. Los detalles conservan las fechas y la referencia de cada comparación.</p>
+      {[false, true].map(pendingGroup => <div key={String(pendingGroup)} className={pendingGroup ? "weeklyPending" : "weeklyAnswers"}>{pendingGroup && report.questions.some(q => ["collecting", "insufficient"].includes(q.state)) && <h3>Preguntas pendientes</h3>}{[...report.questions].filter(q => ["collecting", "insufficient"].includes(q.state) === pendingGroup).sort((a, b) => Number(following.includes(b.id)) - Number(following.includes(a.id))).map(q => {
+        const Container = pendingGroup ? "details" : "article";
+        const narrative = questionNarrative(q);
         const last = q.blocks.filter(b => b.delta !== null).at(-1);
         const previous = memories.filter(m => m.questionId === q.id && m.weekEnd < report.end).sort((a, b) => b.weekEnd.localeCompare(a.weekEnd) || b.recordedAt.localeCompare(a.recordedAt))[0];
         const history = memories.filter(m => m.questionId === q.id && m.weekEnd <= report.end).sort((a, b) => b.weekEnd.localeCompare(a.weekEnd) || b.recordedAt.localeCompare(a.recordedAt)).slice(0, 8);
-        return <article className="card weeklyQuestion" key={q.id}><div className="weeklyQuestionHeader"><span className={`weeklyState ${q.state}`}>{QUESTION_STATES[q.state]}</span>{onFollow && <button aria-pressed={following.includes(q.id)} onClick={() => onFollow(q, !following.includes(q.id))}>{following.includes(q.id) ? 'En seguimiento ✓' : 'Seguir esta pregunta'}</button>}</div><h3>{q.title}</h3><Interpretation narrative={questionNarrative(q)}/>
+        return <Container className={pendingGroup ? "weeklyPendingQuestion" : "card weeklyQuestion"} key={q.id}>{pendingGroup && <summary><strong>{q.title}</strong><span>{QUESTION_STATES[q.state]}</span></summary>}<div className="weeklyQuestionHeader"><span className={`weeklyState ${q.state}`}>{QUESTION_STATES[q.state]}</span>{onFollow && <button aria-pressed={following.includes(q.id)} onClick={() => onFollow(q, !following.includes(q.id))}>{following.includes(q.id) ? 'En seguimiento ✓' : 'Seguir esta pregunta'}</button>}</div><p className="weeklyQuestionTopic">{q.title}</p>{!pendingGroup && <><h3>{narrative.title}</h3><Interpretation narrative={narrative} showLevel={false}/></>}
           {previous && previous.state !== q.state && <p className="weeklyRevision">En la revisión del {dateLabel(previous.weekEnd)}: «{QUESTION_STATES[previous.state]}». Ahora: «{QUESTION_STATES[q.state]}».</p>}
+          <details className="weeklyQuestionEvidence"><summary>Ver comparación, fechas y seguimiento</summary>
           <details><summary>Resultados y referencia de la comparación</summary>
           {!q.reference ? <p>{q.calibrationCount}/20 días disponibles para fijar la referencia en un primer periodo de 28 días. Aún no comparamos grupos.</p> : <>
             <p>Referencia fijada con {dateLabel(q.reference.start)} – {dateLabel(q.reference.end)}: <b>{formatMonitoring(q.x, q.reference.threshold)}</b>. {q.id === 'short-nights-hrv' ? 'Comparamos dos noches consecutivas por encima de tu referencia de duración con dos por debajo o igual, y la HRV atribuida al día siguiente. Esa referencia no define cuánto deberías dormir.' : q.id === 'steps-next-sleep' ? 'Los pasos de cada día se conectan con el sueño atribuido al siguiente.' : 'Sueño y pulso se emparejan por fecha fisiológica; no establece qué ocurrió primero.'}</p>
@@ -44,12 +49,13 @@ export default function WeeklyLearningPanel({ report, memories, following, onOpe
             <div className="weeklyEvidence">{q.blocks.map(block => <div key={block.start}><h4>{dateLabel(block.start)} – {dateLabel(block.end)} · {block.complete ? 'periodo cerrado' : 'periodo en curso'}</h4><p>{block.candidates} días candidatos · {block.matches.length} pares · {block.delta === null ? 'cobertura insuficiente' : deltaLabel(q.y, block.delta)}</p><table><thead><tr><th>Día del grupo inferior</th><th>Día del superior</th><th>{signalLabel(q.y)} inferior / superior</th></tr></thead><tbody>{block.matches.map(pair => <tr key={`${pair.lower.date}|${pair.higher.date}`}><td>{pair.lower.date}<small>Contexto: {pair.lower.exposureDates.join(', ')}</small></td><td>{pair.higher.date}<small>Contexto: {pair.higher.exposureDates.join(', ')}</small></td><td>{formatMonitoring(q.y, pair.lower.y)} / {formatMonitoring(q.y, pair.higher.y)}</td></tr>)}</tbody></table></div>)}</div>
           </details>
           <details><summary>Memoria de esta pregunta · {history.length} {history.length === 1 ? 'revisión' : 'revisiones'}</summary><p>Una semana puede tener varias revisiones si cambian sus datos o contexto. Esas revisiones no cuentan como nuevas repeticiones.</p>{history.length ? history.map(m => <p key={m.id}><b>Semana hasta {dateLabel(m.weekEnd)}:</b> {QUESTION_STATES[m.state]} · {m.pairs} pares en la última comparación. <small>Guardada el {new Date(m.recordedAt).toLocaleString('es-ES')}.</small></p>) : <p>Todavía no hay revisiones guardadas de esta pregunta. Las lecturas históricas recalculadas no se presentan como conclusiones que ya conocíamos entonces.</p>}</details>
+          </details>
           {onOpenTrend && <button onClick={() => onOpenTrend(q.y)}>Explorar {signalLabel(q.y).toLowerCase()} →</button>}
-        </article>;
-      })}
+        </Container>;
+      })}</div>)}
     </section>
 
-    <section className="card weeklyContext" aria-label="Contexto de la semana"><h2>Qué ocurría alrededor</h2><p>{report.events.length} {report.events.length === 1 ? 'evento registrado' : 'eventos registrados'} · {report.checkIns.length}/7 días con check-in. Lo que no se registró sigue siendo desconocido.</p>
+    <section className="card weeklyContext" aria-label="Contexto de la semana"><h2>Cómo te sentías y qué ocurría</h2>{checkInForm}<p>{report.events.length} {report.events.length === 1 ? 'evento registrado' : 'eventos registrados'} · {report.checkIns.length}/7 días con check-in. Estos registros ayudan a interpretar las coincidencias; no demuestran su causa.</p>
       {report.events.map(e => <div className="weeklyEvent" key={e.id}><time>{dateLabel(e.date)}</time><div><strong>{contextLabel(e.type)}</strong>{e.note && <p>{e.note}</p>}</div></div>)}
       {report.checkIns.map(c => <div className="weeklyEvent" key={c.id}><time>{dateLabel(c.date)}</time><span>{[['Energía', c.energy], ['Estrés', c.stress], ['Fatiga', c.fatigue]].filter(([, value]) => value !== null).map(([label, value]) => `${label}: ${value}/5`).join(' · ')}</span></div>)}
       {onAddContext && <button onClick={() => onAddContext(report.end)}>Añadir contexto de esta semana</button>}
