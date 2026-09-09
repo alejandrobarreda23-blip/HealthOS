@@ -18,6 +18,7 @@ export function sleepTimeline(rows: Night[]) {
 }
 
 export default function SleepRhythmChart({ rows, end, onAddContext }: { rows: Night[]; end: string; onAddContext?: (date: string) => void }) {
+  if (!rows.length) return <p>No hay horarios comparables en esta semana.</p>;
   const { intervals, min, max } = sleepTimeline(rows);
   const position = (minute: number) => (minute - min) / (max - min) * 100;
   const days = Array.from({ length: 7 }, (_, i) => minusDays(end, 6 - i));

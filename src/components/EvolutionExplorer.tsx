@@ -1,5 +1,5 @@
 import { chartDomain } from '../health/chart-scale';
-import { useEffect, useId, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { BodyHistorySnapshot } from '../body/view-state';
 import type { BaselineBandPointV1, TrendPointV1, TrendEventV1 } from '../repositories/trends';
 import { compareEvolution, evolutionSmoothing, quantile } from '../health/evolution';
@@ -18,6 +18,9 @@ export default function EvolutionExplorer({metric,points,baselines,events,histor
   history:BodyHistorySnapshot|null;end:string;days:number;onOpenActivities?:(date:string)=>void;
 }) {
   const clipId=useId();
+  const plotRef=useRef<HTMLDivElement>(null);
+  const [plotWidth,setPlotWidth]=useState(340);
+  useEffect(()=>{const node=plotRef.current;if(!node)return;const resize=()=>setPlotWidth(Math.max(220,Math.round(node.getBoundingClientRect().width)));resize();const observer=new ResizeObserver(resize);observer.observe(node);return()=>observer.disconnect();},[]);
   const [focused,setFocused]=useState(false);
   const start=minusDays(end,days-1);
   const [selected,setSelected]=useState(points.at(-1)?.date??end);
@@ -35,7 +38,7 @@ export default function EvolutionExplorer({metric,points,baselines,events,histor
   }),[points,start,days]);
   const [narrow,setNarrow]=useState(typeof window!=='undefined'&&window.innerWidth<600);
   useEffect(()=>{const resize=()=>setNarrow(window.innerWidth<600);window.addEventListener('resize',resize);return()=>window.removeEventListener('resize',resize);},[]);
-  const W=narrow?440:1000,H=410,L=narrow?78:98,R=24,T=22,B=40;
+  const W=narrow?plotWidth:1000,H=narrow?330:410,L=narrow?78:98,R=24,T=22,B=40;
   const {low:lo,high:hi}=chartDomain(points.map(p=>p.value),{key:metric.key,focused,reference:reference?baselines.filter(b=>b.sufficient).flatMap(b=>[b.p25,b.p75].filter((v):v is number=>v!==null)):[]});
   const outside=points.filter(p=>p.value<lo||p.value>hi);
   const x=(d:string)=>days===1?(L+W-R)/2:L+dayOffset(d,start)/Math.max(1,days-1)*(W-L-R);
@@ -58,8 +61,8 @@ export default function EvolutionExplorer({metric,points,baselines,events,histor
     <section className="evPanel">
       <div className="evChartHeader"><div><h2>{metric.label} a lo largo del tiempo</h2><p>{points.length}/{days} días observados · Último dato: {points.at(-1)?`${dateLabel(points.at(-1)!.date)} · ${valueLabel(metric,points.at(-1)!.value)}`:'sin registro'}</p></div><div className="evToggles"><button aria-pressed={!detail} onClick={()=>setDetail(false)}>Semanas</button><button aria-pressed={detail&&dailyLine} onClick={()=>{setDetail(true);setDailyLine(true);}}>Día a día</button><button aria-pressed={detail&&!dailyLine} onClick={()=>{setDetail(true);setDailyLine(false);}}>Días + tendencia</button></div></div>
       <div className="evLegend"><span><i className="evDot"/>Observación diaria</span><span><i className="evLine"/>{detail?dailyLine?'Registro diario':'Mediana móvil · 7 días':'Mediana semanal · rango central'}</span><label><input type="checkbox" disabled={!baselines.some(b=>b.sufficient)} checked={reference&&baselines.some(b=>b.sufficient)} onChange={e=>setReference(e.target.checked)}/>Referencia personal{!baselines.some(b=>b.sufficient)&&" · insuficiente"}</label></div>
-      <div className="chartScaleControls" role="group" aria-label="Escala vertical de evolución"><button aria-pressed={!focused} onClick={()=>setFocused(false)}>Todos los valores</button><button aria-pressed={focused} onClick={()=>setFocused(true)}>Ampliar zona central</button><span>{focused ? outside.length ? `${outside.length} registros fuera de escala, marcados con triángulos. Selecciona su fecha para ver el valor completo.` : "Todos los registros caben en esta escala. La ampliación cambia la vista, no la importancia del cambio." : "Eje ajustado a los datos. Los puntos son mediciones diarias; la línea resume varios días."}</span></div>
-      <div className="evChartScroll">{!points.length?<div className="evMissing">Sin mediciones de esta señal en la ventana. Puedes explorar el contexto registrado debajo.</div>:<svg className="evSvg" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Evolución de ${metric.label}. Selecciona una fecha con el control inferior.`} onPointerMove={choose} onClick={choose}>
+      <div className="chartScaleControls" role="group" aria-label="Escala vertical de evolución"><button aria-pressed={!focused} onClick={()=>setFocused(false)}>Todos los valores</button><button aria-pressed={focused} onClick={()=>setFocused(true)}>Ampliar zona central</button><span>{focused ? outside.length ? `${outside.length} registros fuera de escala, marcados con triángulos. Selecciona su fecha para ver el valor completo.` : "Todos los registros caben en esta escala. La ampliación cambia la vista, no la importancia del cambio." : "Eje ajustado a los datos visibles. Puedes ampliar la zona central para explorar variaciones pequeñas."}</span></div>
+      <div className="evChartScroll" ref={plotRef}>{!points.length?<div className="evMissing">Sin mediciones de esta señal en la ventana. Puedes explorar el contexto registrado debajo.</div>:<svg className="evSvg" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Evolución de ${metric.label}. Selecciona una fecha con el control inferior.`} onPointerMove={choose} onClick={choose}>
         {ticks.map(v=><g key={v}><line x1={L} x2={W-R} y1={y(v)} y2={y(v)} stroke="#e7ebe6"/><text x={L-10} y={y(v)+4} textAnchor="end">{valueLabel(metric,v)}</text></g>)}
         <defs><clipPath id={clipId}><rect x={L} y={T} width={W-L-R} height={H-T-B}/></clipPath></defs><g clipPath={`url(#${clipId})`}>
         {reference&&baselines.slice(1).map((b,i)=>{const a=baselines[i];return a.sufficient&&b.sufficient&&a.sourceKey===b.sourceKey&&dayOffset(b.date,a.date)===1&&a.p25!==null&&a.p75!==null&&b.p25!==null&&b.p75!==null?<polygon key={b.date} points={`${x(a.date)},${y(a.p25)} ${x(b.date)},${y(b.p25)} ${x(b.date)},${y(b.p75)} ${x(a.date)},${y(a.p75)}`} fill="#adc5b7" opacity=".3"/>:null;})}
