@@ -3,14 +3,14 @@ import { MONITORING_METRICS } from './monitoring-metrics';
 import { quantile } from './evolution';
 import { clockSummary, comparableSleepNights, type WeeklyInput } from './weekly-learning';
 
-export const EPISODE_VERSION = 'episodes_v1';
+export const EPISODE_VERSION = 'episodes_v2';
 // Display filters, not clinical limits or estimates of significance.
 const FLOORS: Record<string, number> = { sleep_duration: 30, resting_heart_rate: 3, ultrahuman_sleep_hrv: 10, hrv_rmssd: 10, steps: 1000, sleep_efficiency: 3, oxygen_saturation: 1, temperature_deviation: .2, bedtime: 30 };
 export const EPISODE_METRICS = [...MONITORING_METRICS.filter(m => m.key in FLOORS), { key: 'bedtime', label: 'Inicio del sueño', unit: 'min' }];
 export interface SignalDay { date: string; value: number; ids: string[]; }
 export interface SignalHistory { key: string; source: string; rows: SignalDay[]; circular: boolean; }
 export interface Reference { center: number; threshold: number; mad: number; start: string; end: string; count: number; }
-export interface SignalEpisode { id: string; key: string; source: string; start: string; end: string; direction: number; reference: Reference; delta: number; dates: string[]; status: 'returned' | 'ongoing' | 'interrupted'; returnedAt: string | null; }
+export interface SignalEpisode { id: string; key: string; source: string; start: string; end: string; direction: number; reference: Reference; delta: number; dates: string[]; status: 'returned' | 'ongoing' | 'interrupted'; returnedAt: string | null; stopReason: 'returned' | 'opposite_shift' | 'missing_day' | 'awaiting_data'; stoppedAt: string; }
 export interface Episode { id: string; start: string; end: string; signals: SignalEpisode[]; }
 export const distance = (value: number, center: number, circular = false) => circular ? ((value - center + 2160) % 1440) - 720 : value - center;
 const middle = (values: number[], circular: boolean) => circular ? clockSummary(values)?.minute ?? null : median(values);
@@ -49,16 +49,18 @@ export function detectSignalEpisodes(signal: SignalHistory, asOf: string): Signa
     if (!direction || ![0, 1, 2].every(k => outside(rows[i + k]) && rows[i + k].date === minusDays(rows[i].date, -k))) continue;
     const deviating = [rows[i], rows[i + 1], rows[i + 2]];
     let j = i + 3, inside = 0, returnedAt: string | null = null;
+    let stopReason: SignalEpisode['stopReason'] = 'awaiting_data', stoppedAt = rows.at(-1)!.date;
     for (; j < rows.length; j++) {
-      if (rows[j].date !== minusDays(rows[j - 1].date, -1)) break;
+      if (rows[j].date !== minusDays(rows[j - 1].date, -1)) { stopReason = 'missing_day'; stoppedAt = minusDays(rows[j - 1].date, -1); break; }
       const d = deltaOf(rows[j]);
-      if (direction * d <= -reference.threshold) break;
+      if (direction * d <= -reference.threshold) { stopReason = 'opposite_shift'; stoppedAt = rows[j].date; break; }
       if (outside(rows[j])) { deviating.push(rows[j]); inside = 0; }
-      else if (++inside === 2) { returnedAt = rows[j].date; j++; break; }
+      else if (++inside === 2) { returnedAt = rows[j].date; stopReason = 'returned'; stoppedAt = returnedAt; j++; break; }
     }
+    if (stopReason === 'awaiting_data' && rows.at(-1)!.date < minusDays(asOf, 1)) { stopReason = 'missing_day'; stoppedAt = minusDays(rows.at(-1)!.date, -1); }
     const start = rows[i].date, end = deviating.at(-1)!.date;
     result.push({ id: `${signal.key}|${start}|${direction}|${signal.source}`, key: signal.key, source: signal.source, start, end, direction, reference,
-      delta: median(deviating.map(deltaOf))!, dates: deviating.map(d => d.date), returnedAt,
+      delta: median(deviating.map(deltaOf))!, dates: deviating.map(d => d.date), returnedAt, stopReason, stoppedAt,
       status: returnedAt ? 'returned' : j === rows.length && rows.at(-1)!.date === minusDays(asOf, 1) ? 'ongoing' : 'interrupted' });
     // An opposite shift or a gap can begin a new episode, but never reuse the old run.
     i = Math.max(i + 2, j - 1);
